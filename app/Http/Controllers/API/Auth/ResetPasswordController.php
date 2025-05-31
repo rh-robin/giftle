@@ -22,17 +22,14 @@ class ResetPasswordController extends Controller
         $request->validate([
             'email' => 'required|email|exists:users,email'
         ]);
-        
+
         try {
             $email = $request->input('email');
             $otp = random_int(100000, 999999);
             $user = User::where('email', $email)->first();
 
             if (!$user) {
-                return $this->sendError(
-                    error: 'The provided email address is not associated with any account.',
-                    code: 404
-                );
+                return $this->sendError('User not found', 404);
             }
 
             Mail::to($email)->send(new OtpMail($otp, $user, 'Reset Your Password'));
@@ -42,18 +39,12 @@ class ResetPasswordController extends Controller
                 'otp_expires_at' => Carbon::now()->addMinutes(60),
             ]);
 
-            return $this->sendResponse(
-                data: ['email' => $user->email],
-                message: 'Password reset OTP has been sent to your email address.',
-                code: 200
-            );
+            return $this->sendResponse('OTP sent successfully.', 200);
+
 
         } catch (Exception $e) {
-            return $this->sendError(
-                error: 'Failed to process password reset request. Please try again later.',
-                code: 500,
-                data: ['system_error' => $e->getMessage()]
-            );
+            return $this->sendError('Error sending OTP', $e->getMessage(), 500);
+
         }
     }
 
@@ -68,24 +59,16 @@ class ResetPasswordController extends Controller
             $user = User::where('email', $request->email)->first();
 
             if (!$user) {
-                return $this->sendError(
-                    error: 'User account not found.',
-                    code: 404
-                );
+                return $this->sendError('User not found.', 404);
             }
 
             if (Carbon::parse($user->otp_expires_at)->isPast()) {
-                return $this->sendError(
-                    error: 'The OTP has expired. Please request a new one.',
-                    code: 400
-                );
+                return $this->sendError('The provided OTP has expired. Please request a new one.', 400);
+
             }
 
             if ($user->otp !== $request->otp) {
-                return $this->sendError(
-                    error: 'The provided OTP is invalid. Please check and try again.',
-                    code: 400
-                );
+               return $this->sendError('The provided OTP is incorrect. Please try again.', 400);
             }
 
             $token = Str::random(60);
@@ -95,22 +78,9 @@ class ResetPasswordController extends Controller
                 'reset_password_token' => $token,
                 'reset_password_token_expire_at' => Carbon::now()->addHour(),
             ]);
-
-            return $this->sendResponse(
-                data: [
-                    'reset_token' => $token,
-                    'token_expires_at' => Carbon::now()->addHour()->toDateTimeString()
-                ],
-                message: 'OTP verified successfully. You can now reset your password.',
-                code: 200
-            );
-
+            return $this->sendResponse('OTP verified successfully.', ['token' => $token], 200);
         } catch (Exception $e) {
-            return $this->sendError(
-                error: 'Failed to verify OTP. Please try again.',
-                code: 500,
-                data: ['system_error' => $e->getMessage()]
-            );
+            return $this->sendError('Failed to verify OTP. Please try again.', 500);
         }
     }
 
@@ -126,20 +96,14 @@ class ResetPasswordController extends Controller
             $user = User::where('email', $request->email)->first();
 
             if (!$user) {
-                return $this->sendError(
-                    error: 'User account not found.',
-                    code: 404
-                );
+                return $this->sendError('User account not found.', 404);
             }
 
             $tokenValid = $user->reset_password_token === $request->token &&
                 $user->reset_password_token_expire_at >= Carbon::now();
 
             if (!$tokenValid) {
-                return $this->sendError(
-                    error: 'The password reset link has expired or is invalid. Please request a new one.',
-                    code: 419
-                );
+                return $this->sendError('The password reset link has expired or is invalid. Please request a new one.', 400 );
             }
 
             $user->update([
@@ -148,18 +112,10 @@ class ResetPasswordController extends Controller
                 'reset_password_token_expire_at' => null,
             ]);
 
-            return $this->sendResponse(
-                data: ['email' => $user->email],
-                message: 'Your password has been reset successfully. You can now login with your new password.',
-                code: 200
-            );
+            return $this->sendResponse('Password reset successfully.', 200);
 
         } catch (Exception $e) {
-            return $this->sendError(
-                error: 'Failed to reset password. Please try again.',
-                code: 500,
-                data: ['system_error' => $e->getMessage()]
-            );
+            return $this->sendError('Failed to reset password. Please try again.', 500);
         }
     }
 }

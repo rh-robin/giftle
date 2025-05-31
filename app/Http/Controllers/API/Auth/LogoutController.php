@@ -22,7 +22,7 @@ class LogoutController extends Controller
                 // For API token-based auth (recommended for mobile/SPAs)
                 auth()->user()->currentAccessToken()->delete();
 
-                return $this->sendResponse('User logged out successfully');
+                return $this->sendResponse('User logged out successfully', 200);
             }
 
             return $this->sendError('User not authenticated', 401);
