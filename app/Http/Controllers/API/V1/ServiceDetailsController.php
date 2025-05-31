@@ -6,7 +6,6 @@ use App\Helpers\Helper;
 use App\Models\ServiceFAQ;
 use Illuminate\Support\Str;
 use App\Models\ServiceImage;
-use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
 use App\Models\ServiceDetails;
 use App\Models\ServiceCaseStudy;
@@ -18,7 +17,8 @@ class ServiceDetailsController extends Controller
 {
     use ResponseTrait;
 
-    public function ServiceDetailsList(){
+    public function ServiceDetailsList()
+    {
         $serviceDetails = ServiceDetails::orderBy('id', 'DESC')->get();
         $serviceDetails->load(['service', 'faqs', 'whatIncludes', 'caseStudies', 'images']);
         return $this->sendResponse($serviceDetails, 'Service Details List');
@@ -27,10 +27,10 @@ class ServiceDetailsController extends Controller
     public function ServiceDetailsCreate(ServiceDetailsRequest $request)
     {
         // Check if service detail already exists
-        $serviceDetail = ServiceDetails::where('service_id', $request->service_id)->first();
-        if ($serviceDetail) {
-            return $this->sendError('Service detail already exists.');
+        if (ServiceDetails::where('service_id', $request->service_id)->exists()) {
+            return $this->sendError('Service detail already exists.', 409);
         }
+
         // Create service detail
         $serviceDetail = ServiceDetails::create([
             'title' => $request->title,
@@ -40,10 +40,10 @@ class ServiceDetailsController extends Controller
             'service_id' => $request->service_id,
         ]);
 
-        // Store related images
-        if ($request->has('images')) {
-            foreach ($request->images as $image) {
-                $serviceDetailFile = Helper::fileUpload($image, 'services', $image->getClientOriginalName());
+        // Store related images (if provided)
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $serviceDetailFile = Helper::fileUpload($image, 'service_details', $image->getClientOriginalName());
                 ServiceImage::create([
                     'service_details_id' => $serviceDetail->id,
                     'images' => $serviceDetailFile,
@@ -51,8 +51,8 @@ class ServiceDetailsController extends Controller
             }
         }
 
-        // Store related case studies
-        if ($request->has('case_studies')) {
+        // Store related case studies (if provided)
+        if ($request->filled('case_studies')) {
             foreach ($request->case_studies as $caseStudy) {
                 ServiceCaseStudy::create([
                     'service_details_id' => $serviceDetail->id,
@@ -61,8 +61,8 @@ class ServiceDetailsController extends Controller
             }
         }
 
-        // Store related what includes
-        if ($request->has('what_includes')) {
+        // Store related "what includes" (if provided)
+        if ($request->filled('what_includes')) {
             foreach ($request->what_includes as $item) {
                 ServiceWhatInclude::create([
                     'service_details_id' => $serviceDetail->id,
@@ -71,8 +71,8 @@ class ServiceDetailsController extends Controller
             }
         }
 
-        // Store related FAQs
-        if ($request->has('faqs')) {
+        // Store related FAQs (if provided)
+        if ($request->filled('faqs')) {
             foreach ($request->faqs as $faq) {
                 ServiceFAQ::create([
                     'service_details_id' => $serviceDetail->id,
@@ -84,64 +84,54 @@ class ServiceDetailsController extends Controller
 
         $serviceDetail->load('caseStudies', 'whatIncludes', 'faqs', 'images');
 
-        return $this->sendResponse($serviceDetail, 'Service Detail Created');
+        return $this->sendResponse($serviceDetail, 'Service Detail Created', 201);
     }
 
-    public function ServiceDetailsUpdate(Request $request, $id)
+    public function ServiceDetailsUpdate(ServiceDetailsRequest $request, $id)
     {
         $serviceDetail = ServiceDetails::findOrFail($id);
 
-        // Update only the service detail fields, NOT the service_id
+        // Update service detail fields (excluding service_id)
         $serviceDetail->update([
             'title' => $request->title,
             'subtitle' => $request->subtitle,
             'slug' => Str::slug($request->title),
             'description' => $request->description,
-            // Removed service_id update - it should stay with the original service
         ]);
 
-        // Update case studies
-        if ($request->has('case_studies')) {
+        // Update or create case studies
+        if ($request->filled('case_studies')) {
             foreach ($request->case_studies as $caseStudy) {
                 ServiceCaseStudy::updateOrCreate(
+                    ['id' => $caseStudy['id'] ?? null],
                     [
                         'service_details_id' => $serviceDetail->id,
-                        'id' => $caseStudy['id'] ?? null
-                    ],
-                    [
                         'description' => $caseStudy['description'],
-                        'image' => $caseStudy['image'] ?? null,
                     ]
                 );
             }
         }
 
-        // Update what includes
-        if ($request->has('what_includes')) {
+        // Update or create "what includes"
+        if ($request->filled('what_includes')) {
             foreach ($request->what_includes as $whatInclude) {
                 ServiceWhatInclude::updateOrCreate(
+                    ['id' => $whatInclude['id'] ?? null],
                     [
                         'service_details_id' => $serviceDetail->id,
-                        'id' => $whatInclude['id'] ?? null
-                    ],
-                    [
                         'item' => $whatInclude['item'],
-                        'description' => $whatInclude['description'] ?? null,
-                        'image' => $whatInclude['image'] ?? null,
                     ]
                 );
             }
         }
 
-        // Update FAQs
-        if ($request->has('faqs')) {
+        // Update or create FAQs
+        if ($request->filled('faqs')) {
             foreach ($request->faqs as $faq) {
                 ServiceFAQ::updateOrCreate(
+                    ['id' => $faq['id'] ?? null],
                     [
                         'service_details_id' => $serviceDetail->id,
-                        'id' => $faq['id'] ?? null
-                    ],
-                    [
                         'question' => $faq['question'],
                         'answer' => $faq['answer'],
                     ]
@@ -149,29 +139,43 @@ class ServiceDetailsController extends Controller
             }
         }
 
-        // Store in images
-        if ($request->has('images')) {
-            foreach ($request->images as $image) {
-                // Delete old image if it exists
-                if (!empty($image['id'])) {
-                    $serviceImage = ServiceImage::find($image['id']);
-                    if ($serviceImage) {
-                        Helper::fileDelete($serviceImage->images);
-                        $serviceImage->delete();
-                    }
+        // Handle image updates (if provided)
+        if ($request->hasFile('images')) {
+            // Delete old images (optional)
+            if ($request->delete_old_images) {
+                foreach ($serviceDetail->images as $image) {
+                    Helper::fileDelete($image->images);
+                    $image->delete();
                 }
-                // Upload new image
-                $file = $image['image'];
-                $serviceDetailFile = Helper::fileUpload($file, 'services', $file->getClientOriginalName());
+            }
+
+            // Upload new images
+            foreach ($request->file('images') as $image) {
+                $serviceDetailFile = Helper::fileUpload($image, 'service_details', $image->getClientOriginalName());
                 ServiceImage::create([
                     'service_details_id' => $serviceDetail->id,
                     'images' => $serviceDetailFile,
                 ]);
             }
         }
-
         $serviceDetail->load('caseStudies', 'whatIncludes', 'faqs', 'images');
 
         return $this->sendResponse($serviceDetail, 'Service Detail Updated');
     }
+
+    public function ServiceDetailsDelete($id){
+        $serviceDetail = ServiceDetails::find($id);
+        if (!$serviceDetail) {
+            return $this->sendError('Service Detail not found');
+        }
+        //delete images
+        foreach ($serviceDetail->images as $image) {
+            Helper::fileDelete($image->images);
+            $image->delete();
+        }
+        $serviceDetail->delete();
+        return $this->sendResponse([], 'Service Detail Deleted');
+    }
+
+
 }
