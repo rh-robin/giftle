@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Helpers;
+
+use Illuminate\Support\Str;
+use Illuminate\Http\JsonResponse;
+
+
+class Helper
+{
+    // File or Image Upload
+    public static function fileUpload($file, string $folder, string $name): ?string
+    {
+        // Ensure that file exists in the request
+        if (!$file || !$file->isValid()) return null;
+
+        // Get the original file name
+        $originalName = $file->getClientOriginalName();
+        $path = public_path('uploads/' . $folder);
+
+        // Create directory if it doesn't exist
+        if (!file_exists($path)) mkdir($path, 0755, true);
+
+        // Move the file to the directory
+        $file->move($path, $originalName);
+
+        // Return the path of the uploaded file
+        return 'uploads/' . $folder . '/' . $originalName;
+    }
+
+    // File or Image Delete
+    public static function fileDelete(string $path): void
+    {
+        if (file_exists($path)) {
+            unlink($path);
+        }
+    }
+
+    // Generate Slug
+    public static function makeSlug($model, string $name): string
+    {
+        $slug = Str::slug($name);
+        while ($model::where('slug', $slug)->exists()) {
+            $randomString = Str::random(5);
+            $slug         = Str::slug($name) . '-' . $randomString;
+        }
+        return $slug;
+    }
+}

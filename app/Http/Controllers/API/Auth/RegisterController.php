@@ -22,9 +22,9 @@ class RegisterController extends Controller
             'name' => 'nullable|string|max:100',
             'email' => 'required|string|email|max:150|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'company_name' => 'required|string|max:20',
+            'company_name' => 'required|string|max:50',
             'company_address' => 'required|string',
-            'phone' => 'required|string|max:20',
+            'phone' => 'required|string|max:20|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
         ]);
         try {
             // Create user
@@ -35,6 +35,7 @@ class RegisterController extends Controller
                 'company_name' => $request->input('company_name'),
                 'company_address' => $request->input('company_address'),
                 'phone' => $request->input('phone'),
+                'email_verified_at' => Carbon::now(),
             ]);
             return $this->sendResponse($user, 'Registration successful ', 200);
         } catch (Exception $e) {

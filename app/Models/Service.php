@@ -12,6 +12,7 @@ class Service extends Model
         'name',
         'description',
         'image',
+        'slug',
         'status',
     ];
 }
