@@ -21,6 +21,6 @@ class DatabaseSeeder extends Seeder
         ]);
         $this->call(ServiceSeeder::class);
         $this->call(GiftingSeeder::class);
-
+        $this->call(CatalogueSeeder::class);
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Controllers\API\V1\GiftingController;
 use App\Http\Controllers\API\V1\ServiceController;
 use App\Http\Controllers\API\Auth\LogoutController;
 use App\Http\Controllers\API\Auth\RegisterController;
+use App\Http\Controllers\API\V1\CataloguesController;
 use App\Http\Controllers\API\V1\ServiceDetailsController;
 use App\Http\Controllers\API\Auth\ResetPasswordController;
 
@@ -48,6 +49,14 @@ Route::group(['middleware' => 'auth:sanctum'], static function () {
         Route::post('/create', 'GiftingCreate');
         Route::post('/update/{id}', 'GiftingUpdate');
         Route::delete('/delete/{id}', 'GiftingDelete');
+    });
+
+        //Catalogue group controller
+    Route::controller(CataloguesController::class)->prefix('v1/catalogues')->group(function () {
+        Route::get('/list', 'CatalogueList');
+        Route::post('/create', 'CatalogueCreate');
+        Route::post('/update/{id}', 'CatalogueUpdate');
+        Route::delete('/delete/{id}', 'CatalogueDelete');
     });
 
 });
