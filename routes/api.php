@@ -3,6 +3,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Auth\LoginController;
+use App\Http\Controllers\API\V1\GiftingController;
 use App\Http\Controllers\API\V1\ServiceController;
 use App\Http\Controllers\API\Auth\LogoutController;
 use App\Http\Controllers\API\Auth\RegisterController;
@@ -39,6 +40,14 @@ Route::group(['middleware' => 'auth:sanctum'], static function () {
         Route::post('/create', 'ServiceDetailsCreate');
         Route::post('/update/{id}', 'ServiceDetailsUpdate');
         Route::delete('/delete/{id}', 'ServiceDetailsDelete');
+    });
+
+       //Gifting group controller
+    Route::controller(GiftingController::class)->prefix('v1/gifting')->group(function () {
+        Route::get('/list', 'GiftingList');
+        Route::post('/create', 'GiftingCreate');
+        Route::post('/update/{id}', 'GiftingUpdate');
+        Route::delete('/delete/{id}', 'GiftingDelete');
     });
 
 });
