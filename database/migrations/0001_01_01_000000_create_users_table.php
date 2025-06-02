@@ -32,7 +32,7 @@ return new class extends Migration
             $table->string('deleted_at')->nullable();
 
 
-            $table->enum('role', ['admin', 'company', 'user'])->default('user');
+            $table->enum('role', ['admin', 'receptionist', 'user'])->default('user');
             $table->string('avatar')->nullable();
             $table->rememberToken();
             $table->timestamps();
