@@ -37,7 +37,9 @@ class RegisterController extends Controller
                 'phone' => $request->input('phone'),
                 'email_verified_at' => Carbon::now(),
             ]);
-            return $this->sendResponse($user, 'Registration successful ', 200);
+            //token releted to user
+            $token = $user->createToken('YourAppName')->plainTextToken;
+            return $this->sendResponse(['user' => $user, 'token' => $token], 'Registration successful ', 200);
         } catch (Exception $e) {
             Log::error('Register Error', (array)$e->getMessage());
             return $this->sendError($e->getMessage());
