@@ -14,6 +14,7 @@ trait ResponseTrait
     }
 
 
+
     public function sendError($error, $message = null, $statusCode = 400, $data = null)
     {
         $response = ['success' => false];

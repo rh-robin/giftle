@@ -46,7 +46,7 @@ class ServiceDetailsController extends Controller
                 $serviceDetailFile = Helper::fileUpload($image, 'service_details', $image->getClientOriginalName());
                 ServiceImage::create([
                     'service_details_id' => $serviceDetail->id,
-                    'images' => $serviceDetailFile,
+                    'images' => asset($serviceDetailFile),
                 ]);
             }
         }
@@ -154,7 +154,7 @@ class ServiceDetailsController extends Controller
                 $serviceDetailFile = Helper::fileUpload($image, 'service_details', $image->getClientOriginalName());
                 ServiceImage::create([
                     'service_details_id' => $serviceDetail->id,
-                    'images' => $serviceDetailFile,
+                    'images' => asset($serviceDetailFile),
                 ]);
             }
         }

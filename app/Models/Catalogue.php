@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Catalogue extends Model
 {
-    protected $table = 'catalogues';
 
     protected $fillable =
     [
@@ -16,4 +15,8 @@ class Catalogue extends Model
         'slug',
         'status',
     ];
+    public function products()
+{
+    return $this->hasMany(Product::class);
+}
 }
