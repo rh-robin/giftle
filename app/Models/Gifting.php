@@ -7,5 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Gifting extends Model
 {
     protected $guarded = [];
-
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'giftings_id');
+    }
 }

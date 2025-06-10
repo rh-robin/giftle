@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Models\Product;
 use Illuminate\Support\Str;
 use Illuminate\Http\JsonResponse;
 
@@ -45,5 +46,23 @@ class Helper
             $slug         = Str::slug($name) . '-' . $randomString;
         }
         return $slug;
+    }
+
+    // Generate Unique Slug
+    public function createUniqueSlug($name)
+    {
+        $slug = Str::slug($name);
+        $count = Product::where('slug', $slug)->count();
+
+        return $count ? "{$slug}-{$count}" : $slug;
+    }
+    //generate SKU
+    public function generateUniqueSku()
+    {
+        do {
+            $sku = (string) Str::uuid();
+        } while (Product::where('sku', $sku)->exists());
+
+        return $sku;
     }
 }

@@ -4,6 +4,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Auth\LoginController;
 use App\Http\Controllers\API\V1\GiftingController;
+use App\Http\Controllers\API\V1\ProductController;
 use App\Http\Controllers\API\V1\ServiceController;
 use App\Http\Controllers\API\Auth\LogoutController;
 use App\Http\Controllers\API\Auth\RegisterController;
@@ -57,6 +58,14 @@ Route::group(['middleware' => 'auth:sanctum'], static function () {
         Route::post('/create', 'CatalogueCreate');
         Route::post('/update/{id}', 'CatalogueUpdate');
         Route::delete('/delete/{id}', 'CatalogueDelete');
+    });
+
+    //product group controller
+    Route::controller(ProductController::class)->prefix('v1/product')->group(function () {
+        Route::get('/list', 'ProductList');
+        Route::post('/create', 'ProductCreate');
+        Route::post('/update/{id}', 'ProductUpdate');
+        Route::delete('/delete/{id}', 'ProductDelete');
     });
 
 });
