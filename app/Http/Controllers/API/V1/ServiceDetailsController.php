@@ -26,6 +26,7 @@ class ServiceDetailsController extends Controller
 
     public function ServiceDetailsCreate(ServiceDetailsRequest $request)
     {
+
         // Check if service detail already exists
         if (ServiceDetails::where('service_id', $request->service_id)->exists()) {
             return $this->sendError('Service detail already exists.', 409);
@@ -33,9 +34,10 @@ class ServiceDetailsController extends Controller
 
         // Create service detail
         $serviceDetail = ServiceDetails::create([
+            'name' => $request->name,
             'title' => $request->title,
             'subtitle' => $request->subtitle,
-            'slug' => Str::slug($request->title),
+            'slug' => Str::slug($request->name),
             'description' => $request->description,
             'service_id' => $request->service_id,
         ]);
