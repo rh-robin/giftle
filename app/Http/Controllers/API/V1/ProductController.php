@@ -15,6 +15,11 @@ class ProductController extends Controller
 {
     use ResponseTrait;
 
+    public function ProductList(){
+        $products = Product::with(['catalouge', 'gifting', 'images', 'primaryImage', 'priceRange'])->cursor();
+        return $this->sendResponse($products, 'Products List');
+    }
+
     public function ProductCreate(ProductRequest $request)
     {
         // Create the main product

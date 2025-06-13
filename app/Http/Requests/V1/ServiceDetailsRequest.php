@@ -22,6 +22,7 @@ class ServiceDetailsRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'name' => 'required|string|max:255',
             'title' => 'required|string|max:255',
             'subtitle' => 'required|string|max:255',
             'description' => 'required|string',
@@ -32,6 +33,13 @@ class ServiceDetailsRequest extends FormRequest
             'what_includes.*.item' => 'required|string',
             'faqs.*.question' => 'required|string',
             'faqs.*.answer' => 'required|string',
+        ];
+    }
+    public function messages(): array
+    {
+        return [
+            'images.*.mimes' => 'The image must be a file of type: jpg, png, jpeg, gif.',
+            'images.*.max' => 'The image may not be greater than 20MB.',
         ];
     }
 }

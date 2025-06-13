@@ -11,6 +11,8 @@ use App\Http\Controllers\API\Auth\RegisterController;
 use App\Http\Controllers\API\V1\CataloguesController;
 use App\Http\Controllers\API\V1\ServiceDetailsController;
 use App\Http\Controllers\API\Auth\ResetPasswordController;
+use App\Http\Controllers\API\V1\Frontend\GiftingApiController;
+use App\Http\Controllers\API\V1\Frontend\ServiceApiController;
 
 //register
 Route::post('register', [RegisterController::class, 'register']);
@@ -67,6 +69,19 @@ Route::group(['middleware' => 'auth:sanctum'], static function () {
         Route::post('/update/{id}', 'ProductUpdate');
         Route::delete('/delete/{id}', 'ProductDelete');
     });
+});
+
+//frontend all api routes
+Route::prefix('v1/')->group(function () {
+    Route::get('servces', [ServiceApiController::class, 'index']);
+    Route::get('servces/{slug}', [ServiceApiController::class, 'serviceShow']);
+
+    //gifting route
+    Route::get('gifting', [GiftingApiController::class, 'index']);
+    Route::get('gifting/{slug}', [GiftingApiController::class, 'serviceShow']);
+    //gifting route
+    Route::get('gifting', [GiftingApiController::class, 'index']);
+    Route::get('gifting/{slug}', [GiftingApiController::class, 'serviceShow']);
 
 });
 
