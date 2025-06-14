@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->longText('description');
             $table->string('image');
-            $table->string('slug')->unique();
+            $table->string('slug');
             $table->enum('status', ['active', 'inactive']);
             $table->timestamps();
         });

@@ -6,6 +6,7 @@ use App\Helpers\Helper;
 use App\Models\ServiceFAQ;
 use Illuminate\Support\Str;
 use App\Models\ServiceImage;
+use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
 use App\Models\ServiceDetails;
 use App\Models\ServiceCaseStudy;
@@ -89,9 +90,27 @@ class ServiceDetailsController extends Controller
         return $this->sendResponse($serviceDetail, 'Service Detail Created', 201);
     }
 
-    public function ServiceDetailsUpdate(ServiceDetailsRequest $request, $id)
+    public function ServiceDetailsUpdate(Request $request, $id)
     {
-        $serviceDetail = ServiceDetails::findOrFail($id);
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'title' => 'required|string|max:255',
+            'subtitle' => 'required|string|max:255',
+            'description' => 'required|string',
+            'service_id' => 'required|exists:services,id',
+            'images' => 'nullable|array|min:1',
+            'images.*' => 'file|mimes:jpg,png,jpeg,gif|max:20048',
+            'case_studies.*.description' => 'required|string',
+            'what_includes.*.item' => 'required|string',
+            'faqs.*.question' => 'required|string',
+            'faqs.*.answer' => 'required|string',
+        ]);
+
+        $serviceDetail = ServiceDetails::find($id);
+        if (!$serviceDetail) {
+            return $this->sendError('Service Detail not found');
+        }
+
 
         // Update service detail fields (excluding service_id)
         $serviceDetail->update([
@@ -179,5 +198,18 @@ class ServiceDetailsController extends Controller
         return $this->sendResponse([], 'Service Detail Deleted');
     }
 
+    public function ServiceDetailsDeleteImage(Request $request, $id){
+        $serviceDetail = ServiceDetails::find($id);
+        if (!$serviceDetail) {
+            return $this->sendError('Service Detail not found');
+        }
+        $image = ServiceImage::find($request->image_id);
+        if (!$image) {
+            return $this->sendError('Image not found');
+        }
+        Helper::fileDelete($image->images);
+        $image->delete();
+        return $this->sendResponse([], 'Image Deleted');
+    }
 
 }

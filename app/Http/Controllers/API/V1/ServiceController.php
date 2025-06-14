@@ -62,8 +62,18 @@ class ServiceController extends Controller
         }
     }
     //service update
-    public function ServiceUpdate(ServiceRequest $request, $id)
+    public function ServiceUpdate(Request $request, $id)
     {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255', 'min:3'],
+            'description' => ['required', 'string', 'min:10', 'max:5000'],
+            'image' => [
+                'nullable',
+                'image',
+                'mimes:jpeg,png,jpg,gif,svg',
+                'max:524288000', // 500MB
+            ],
+        ]);
         try {
             $service = Service::find($id);
             if (empty($service)) {
