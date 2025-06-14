@@ -44,6 +44,9 @@ Route::group(['middleware' => 'auth:sanctum'], static function () {
         Route::post('/create', 'ServiceDetailsCreate');
         Route::post('/update/{id}', 'ServiceDetailsUpdate');
         Route::delete('/delete/{id}', 'ServiceDetailsDelete');
+
+        //delete images
+        Route::delete('/delete-image/{id}', 'ServiceDetailsDeleteImage');
     });
 
        //Gifting group controller
@@ -74,14 +77,15 @@ Route::group(['middleware' => 'auth:sanctum'], static function () {
 //frontend all api routes
 Route::prefix('v1/')->group(function () {
     Route::get('servces', [ServiceApiController::class, 'index']);
-    Route::get('servces/{slug}', [ServiceApiController::class, 'serviceShow']);
+    Route::get('servces/{id}', [ServiceApiController::class, 'serviceShow']);
 
     //gifting route
     Route::get('gifting', [GiftingApiController::class, 'index']);
-    Route::get('gifting/{slug}', [GiftingApiController::class, 'serviceShow']);
+    Route::get('gifting/{id}', [GiftingApiController::class, 'serviceShow']);
     //gifting route
     Route::get('gifting', [GiftingApiController::class, 'index']);
-    Route::get('gifting/{slug}', [GiftingApiController::class, 'serviceShow']);
+    Route::get('gifting/{id}', [GiftingApiController::class, 'serviceShow']);
 
 });
+
 

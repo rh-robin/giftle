@@ -24,6 +24,7 @@ class LoginController extends Controller
         $request->validate([
             'email'    => 'required|string',
             'password' => 'required|string',
+            'role' => 'required|in:admin,receptionist,user',
         ]);
 
         try {
@@ -43,6 +44,10 @@ class LoginController extends Controller
             if (!$user->hasVerifiedEmail()) {
                 return $this->sendError('Email not verified. Please verify your email before logging in.');
             }
+            // Generate token if role is matched
+            if ($user->role !== $request->role) {
+                return $this->sendError('Role not matched. Please check your role.');
+            }
 
             $token = $user->createToken('Login Token')->plainTextToken;
 
@@ -55,6 +60,7 @@ class LoginController extends Controller
                         'name' => $user->name,
                         'email' => $user->email,
                         'is_verified' => $user->is_verified,
+                        'role' => $user->role
                     ]
                 ],
                 message: 'Login successful. Welcome back!',

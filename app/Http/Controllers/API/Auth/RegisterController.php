@@ -25,6 +25,7 @@ class RegisterController extends Controller
             'company_name' => 'required|string|max:50',
             'company_address' => 'required|string',
             'phone' => 'required|string|max:20|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
+            'role' => 'in:admin,receptionist,user',
         ]);
         try {
             // Create user
@@ -36,6 +37,7 @@ class RegisterController extends Controller
                 'company_address' => $request->input('company_address'),
                 'phone' => $request->input('phone'),
                 'email_verified_at' => Carbon::now(),
+                'role' => $request->input('role'),
             ]);
             //token releted to user
             $token = $user->createToken('YourAppName')->plainTextToken;

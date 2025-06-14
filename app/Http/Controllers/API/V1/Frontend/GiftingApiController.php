@@ -15,10 +15,10 @@ class GiftingApiController extends Controller
         return $this->sendResponse($giftings, 'Giftings fetched successfully');
     }
     //servivice details fetch
-   public function serviceShow($slug)
+   public function serviceShow($id)
 {
     $giftings = Gifting::with(['products.images', 'products.priceRange', 'products.catalouge'])
-        ->where('slug', $slug)
+        ->where('id', $id)
         ->firstOrFail();
 
     return $this->sendResponse($giftings, 'Gifting Details fetched successfully');

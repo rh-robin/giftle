@@ -22,7 +22,7 @@ return new class extends Migration
             $table->integer('minimum_order_quantity');
             $table->string('estimated_delivery_time');
             $table->enum('product_type', ['product', 'bag']);
-            $table->string('slug')->unique();
+            $table->string('slug');
             $table->string('sku')->unique();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->foreign('catalog_id')->references('id')->on('catalogues')->onDelete('cascade');

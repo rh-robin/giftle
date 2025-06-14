@@ -16,8 +16,8 @@ class ServiceApiController extends Controller
         return $this->sendResponse($services, 'Services fetched successfully');
     }
     //servivice details fetch
-    public function serviceShow($slug){
-        $serviceDetails = ServiceDetails::where('slug', $slug)->first();
+    public function serviceShow($id){
+        $serviceDetails = ServiceDetails::where('id', $id)->first();
         if(empty($serviceDetails)){
             return $this->sendError('Service Detail not found', 404);
         }
