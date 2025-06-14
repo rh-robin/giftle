@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('giftings_id');
-            $table->unsignedBigInteger('catalog_id');
             $table->string('name');
             $table->string('description');
             $table->integer('price');
@@ -25,7 +24,6 @@ return new class extends Migration
             $table->string('slug');
             $table->string('sku')->unique();
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->foreign('catalog_id')->references('id')->on('catalogues')->onDelete('cascade');
             $table->foreign('giftings_id')->references('id')->on('giftings')->onDelete('cascade');
             $table->timestamps();
         });

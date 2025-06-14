@@ -7,7 +7,9 @@ use App\Models\Product;
 use Illuminate\Support\Str;
 use App\Models\ProductImage;
 use App\Traits\ResponseTrait;
+use App\Models\ProductCatalogue;
 use App\Models\ProductPriceRange;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\V1\ProductRequest;
 
@@ -15,7 +17,8 @@ class ProductController extends Controller
 {
     use ResponseTrait;
 
-    public function ProductList(){
+    public function ProductList()
+    {
         $products = Product::with(['catalouge', 'gifting', 'images', 'primaryImage', 'priceRange'])->cursor();
         return $this->sendResponse($products, 'Products List');
     }
@@ -25,7 +28,6 @@ class ProductController extends Controller
         // Create the main product
         $product = Product::create([
             'giftings_id' => intval($request->giftings_id),
-            'catalog_id' => intval($request->catalog_id),
             'name' => $request->name,
             'description' => $request->description,
             'price' => intval($request->price),
@@ -58,12 +60,30 @@ class ProductController extends Controller
                 ]);
             }
         }
-        $product->load('images', 'priceRange');
+        if ($request->has('catalog_ids')) {
+            foreach ($request->catalog_ids as $catalog_id) {
+                DB::table('product_catalogues')->insert([
+                    'product_id' => $product->id,
+                    'catalogue_id' => intval($catalog_id),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+        $product->load([
+            'images',
+            'priceRange',
+            'catalogues' => function ($query) {
+                $query->select('catalogues.id', 'name', 'description', 'image');
+            }
+        ]);
 
+        // Hide pivot from catalogues
+        $product->catalogues->each->makeHidden('pivot');
         return $this->sendResponse($product, 'Product Created Successfully');
     }
 
-      // Generate Unique Slug
+    // Generate Unique Slug
     private function createUniqueSlug($name)
     {
         $slug = Str::slug($name);

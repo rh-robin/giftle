@@ -11,7 +11,6 @@ class Product extends Model
 
     protected $fillable = [
         'giftings_id',
-        'catalog_id',
         'name',
         'description',
         'price',
@@ -67,5 +66,11 @@ class Product extends Model
     public function priceRange()
     {
         return $this->hasMany(ProductPriceRange::class);
+    }
+
+    // get the product catalogues
+    public function catalogues()
+    {
+        return $this->belongsToMany(Catalogue::class, 'product_catalogues', 'product_id', 'catalogue_id');
     }
 }

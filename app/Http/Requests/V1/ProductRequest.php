@@ -24,7 +24,6 @@ class ProductRequest extends FormRequest
     {
         return [
             'giftings_id' => 'required|exists:giftings,id',
-            'catalog_id' => 'required|exists:catalogues,id',
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|integer|min:0',
@@ -38,6 +37,8 @@ class ProductRequest extends FormRequest
             'price_ranges.*.min_quantity' => 'required_with:price_ranges|integer|min:1',
             'price_ranges.*.max_quantity' => 'required_with:price_ranges|integer|gt:price_ranges.*.min_quantity',
             'price_ranges.*.price' => 'required_with:price_ranges|integer|min:0',
+            'catalog_ids' => 'nullable|array',
+            'catalog_ids.*' => 'exists:catalogues,id',
         ];
     }
 }

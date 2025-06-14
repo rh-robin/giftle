@@ -25,7 +25,7 @@ class RegisterController extends Controller
             'company_name' => 'required|string|max:50',
             'company_address' => 'required|string',
             'phone' => 'required|string|max:20|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
-            'role' => 'in:admin,receptionist,user',
+            'role' => 'required|in:receptionist,user',
         ]);
         try {
             // Create user

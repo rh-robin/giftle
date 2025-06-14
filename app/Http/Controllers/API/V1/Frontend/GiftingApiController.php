@@ -9,18 +9,19 @@ use App\Http\Controllers\Controller;
 
 class GiftingApiController extends Controller
 {
-     use ResponseTrait;
-    public function index(){
+    use ResponseTrait;
+    public function index()
+    {
         $giftings = Gifting::latest()->cursor();
         return $this->sendResponse($giftings, 'Giftings fetched successfully');
     }
     //servivice details fetch
-   public function serviceShow($id)
-{
-    $giftings = Gifting::with(['products.images', 'products.priceRange', 'products.catalouge'])
-        ->where('id', $id)
-        ->firstOrFail();
+    public function serviceShow($id)
+    {
+        $giftings = Gifting::with(['products.images', 'products.priceRange', 'products.catalouge'])
+            ->where('id', $id)
+            ->firstOrFail();
 
-    return $this->sendResponse($giftings, 'Gifting Details fetched successfully');
-}
+        return $this->sendResponse($giftings, 'Gifting Details fetched successfully');
+    }
 }
