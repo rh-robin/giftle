@@ -123,4 +123,8 @@ class GiftingController extends Controller
             return $this->sendError('Something went wrong');
         }
     }
+
+    //gift box controller store method
+
+
 }

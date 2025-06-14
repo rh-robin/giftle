@@ -3,6 +3,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Auth\LoginController;
+use App\Http\Controllers\API\V1\GiftBoxController;
 use App\Http\Controllers\API\V1\GiftingController;
 use App\Http\Controllers\API\V1\ProductController;
 use App\Http\Controllers\API\V1\ServiceController;
@@ -49,15 +50,22 @@ Route::group(['middleware' => 'auth:sanctum'], static function () {
         Route::delete('/delete-image/{id}', 'ServiceDetailsDeleteImage');
     });
 
-       //Gifting group controller
+    //Gifting group controller
     Route::controller(GiftingController::class)->prefix('v1/gifting')->group(function () {
         Route::get('/list', 'GiftingList');
         Route::post('/create', 'GiftingCreate');
         Route::post('/update/{id}', 'GiftingUpdate');
         Route::delete('/delete/{id}', 'GiftingDelete');
     });
+    //GiftBox group controller
+    Route::controller(GiftBoxController::class)->prefix('v1/gift-box')->group(function () {
+        Route::get('/list', 'GiftBoxList');
+        Route::post('/create', 'GiftBoxCreate');
+        Route::post('/update/{id}', 'GiftBoxUpdate');
+        Route::delete('/delete/{id}', 'GiftBoxDelete');
+    });
 
-        //Catalogue group controller
+    //Catalogue group controller
     Route::controller(CataloguesController::class)->prefix('v1/catalogues')->group(function () {
         Route::get('/list', 'CatalogueList');
         Route::post('/create', 'CatalogueCreate');
@@ -82,10 +90,7 @@ Route::prefix('v1/')->group(function () {
     //gifting route
     Route::get('gifting', [GiftingApiController::class, 'index']);
     Route::get('gifting/{id}', [GiftingApiController::class, 'serviceShow']);
-    //gifting route
+    //gifting
     Route::get('gifting', [GiftingApiController::class, 'index']);
     Route::get('gifting/{id}', [GiftingApiController::class, 'serviceShow']);
-
 });
-
-
