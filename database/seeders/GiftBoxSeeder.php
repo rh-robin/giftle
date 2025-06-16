@@ -18,59 +18,42 @@ class GiftBoxSeeder extends Seeder
             'gifte_branded_price' => 100,
             'custom_branding_price' => 150,
             'plain_price' => 50,
-            'image' => asset('backend/img/automated.png'),
+            'image' => 'backend/img/automated.png',
         ]);
         GiftBox::create([
-            'name' => 'Gift Box',
-            'gifte_branded_price' => 100,
+            'name' => 'Craft Gift Boxes',
+            'gifte_branded_price' => 30,
             'custom_branding_price' => 150,
             'plain_price' => 50,
-            'image' => asset('backend/img/automated.png'),
+            'image' => 'backend/img/automated.png',
         ]);
         GiftBox::create([
-            'name' => 'Gift Box',
+            'name' => 'Luxury gift box',
             'gifte_branded_price' => 100,
             'custom_branding_price' => 150,
             'plain_price' => 50,
-            'image' => asset('backend/img/automated.png'),
+            'image' => 'backend/img/automated.png',
         ]);
         GiftBox::create([
-            'name' => 'Gift Box',
+            'name' => 'Packing tape',
             'gifte_branded_price' => 100,
             'custom_branding_price' => 150,
             'plain_price' => 50,
-            'image' => asset('backend/img/automated.png'),
+            'image' => 'backend/img/automated.png',
         ]);
         GiftBox::create([
-            'name' => 'Gift Box',
+            'name' => 'Paper Polymaile',
             'gifte_branded_price' => 100,
             'custom_branding_price' => 150,
             'plain_price' => 50,
-            'image' => asset('backend/img/automated.png'),
-        ]);GiftBox::create([
-            'name' => 'Gift Box',
+            'image' => 'backend/img/automated.png',
+        ]);
+        GiftBox::create([
+            'name' => 'Poly mailer',
             'gifte_branded_price' => 100,
             'custom_branding_price' => 150,
             'plain_price' => 50,
-            'image' => asset('backend/img/automated.png'),
-        ]);GiftBox::create([
-            'name' => 'Gift Box',
-            'gifte_branded_price' => 100,
-            'custom_branding_price' => 150,
-            'plain_price' => 50,
-            'image' => asset('backend/img/automated.png'),
-        ]);GiftBox::create([
-            'name' => 'Gift Box',
-            'gifte_branded_price' => 100,
-            'custom_branding_price' => 150,
-            'plain_price' => 50,
-            'image' => asset('backend/img/automated.png'),
-        ]);GiftBox::create([
-            'name' => 'Gift Box',
-            'gifte_branded_price' => 100,
-            'custom_branding_price' => 150,
-            'plain_price' => 50,
-            'image' => asset('backend/img/automated.png'),
+            'image' => 'backend/img/automated.png',
         ]);
     }
 }

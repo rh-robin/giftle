@@ -15,4 +15,9 @@ class Service extends Model
         'slug',
         'status',
     ];
+
+    public function getImageAttribute($value)
+    {
+        return $value ? asset($value) : null;
+    }
 }

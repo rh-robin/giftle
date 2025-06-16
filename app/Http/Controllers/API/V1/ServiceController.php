@@ -67,46 +67,35 @@ class ServiceController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255', 'min:3'],
             'description' => ['required', 'string', 'min:10', 'max:5000'],
-            'image' => [
-                'nullable',
-                'image',
-                'mimes:jpeg,png,jpg,gif,svg',
-                'max:524288000', // 500MB
-            ],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:524288000'],
         ]);
-        try {
-            $service = Service::find($id);
-            if (empty($service)) {
-                return $this->sendError('Service Not Found');
-            }
-            //file upload
-            $fileUrl = '';
-            if ($request->hasFile('image')) {
-                //delete old file
-                if (!empty($service->image)) {
-                    Helper::fileDelete($service->image);
-                }
-                $file = $request->file('image');
-                $fileUrl = Helper::fileUpload($file, 'services', $file->getClientOriginalName());
-            }
-            $service->update([
-                'name' => $request->name,
-                'description' => $request->description,
-                'image' => asset($fileUrl),
-                'slug' => Str::slug($request->name),
-            ]);
 
-            if (empty($service)) {
-                return $this->sendError('Service Not Updated');
+        $service = Service::findOrFail($id);
+
+        // Keep existing image unless new one is uploaded
+        $imagePath = $service->image;
+
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($service->image) {
+                Helper::fileDelete($service->image);
             }
-            return $this->sendResponse($service, 'Service Updated');
-        } catch (UniqueConstraintViolationException $e) {
-            Log::error('Duplicate entry during service creation: ' . $e->getMessage());
-            return $this->sendError('Duplicate entry for service name', 409);
-        } catch (Exception $e) {
-            Log::error('Service creation failed: ' . $e->getMessage());
-            return $this->sendError('Something went wrong: ' . $e->getMessage(), 500);
+            // Upload new image
+            $imagePath = Helper::fileUpload(
+                $request->file('image'),
+                'services',
+                $request->file('image')->getClientOriginalName()
+            );
         }
+
+        $service->update([
+            'name' => $request->name,
+            'description' => $request->description,
+            'image' => $imagePath,
+            'slug' => Str::slug($request->name),
+        ]);
+
+        return $this->sendResponse($service, 'Service Updated');
     }
     //service delete
     public function ServiceDelete($id)

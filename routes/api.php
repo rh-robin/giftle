@@ -12,6 +12,7 @@ use App\Http\Controllers\API\Auth\RegisterController;
 use App\Http\Controllers\API\V1\CataloguesController;
 use App\Http\Controllers\API\V1\ServiceDetailsController;
 use App\Http\Controllers\API\Auth\ResetPasswordController;
+use App\Http\Controllers\API\V1\Frontend\GiftBoxApiController;
 use App\Http\Controllers\API\V1\Frontend\GiftingApiController;
 use App\Http\Controllers\API\V1\Frontend\ServiceApiController;
 
@@ -91,6 +92,5 @@ Route::prefix('v1/')->group(function () {
     Route::get('gifting', [GiftingApiController::class, 'index']);
     Route::get('gifting/{id}', [GiftingApiController::class, 'serviceShow']);
     //gifting
-    Route::get('gifting', [GiftingApiController::class, 'index']);
-    Route::get('gifting/{id}', [GiftingApiController::class, 'serviceShow']);
+    Route::get('gift-box', [GiftBoxApiController::class, 'index']);
 });

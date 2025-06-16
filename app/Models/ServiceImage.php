@@ -16,4 +16,5 @@ class ServiceImage extends Model
     {
         return $this->belongsTo(ServiceDetails::class, 'service_details_id');
     }
+
 }

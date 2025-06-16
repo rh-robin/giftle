@@ -32,6 +32,16 @@ class Helper
     // File or Image Delete
     public static function fileDelete(string $path): void
     {
+        // If path is a URL, convert to local path
+        if (str_starts_with($path, 'http')) {
+            $path = parse_url($path, PHP_URL_PATH);
+            $path = public_path($path);
+        }
+        // If path is relative (uploads/...), make it absolute
+        elseif (!str_starts_with($path, public_path())) {
+            $path = public_path($path);
+        }
+
         if (file_exists($path)) {
             unlink($path);
         }

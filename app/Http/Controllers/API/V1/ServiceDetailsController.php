@@ -49,7 +49,7 @@ class ServiceDetailsController extends Controller
                 $serviceDetailFile = Helper::fileUpload($image, 'service_details', $image->getClientOriginalName());
                 ServiceImage::create([
                     'service_details_id' => $serviceDetail->id,
-                    'images' => asset($serviceDetailFile),
+                    'images' => $serviceDetailFile,
                 ]);
             }
         }
@@ -160,7 +160,7 @@ class ServiceDetailsController extends Controller
             }
         }
 
-        // Handle image updates (if provided)
+        // Keep existing image unless new one is uploaded
         if ($request->hasFile('images')) {
             // Delete old images (optional)
             if ($request->delete_old_images) {
@@ -172,10 +172,11 @@ class ServiceDetailsController extends Controller
 
             // Upload new images
             foreach ($request->file('images') as $image) {
+                // Upload new image
                 $serviceDetailFile = Helper::fileUpload($image, 'service_details', $image->getClientOriginalName());
                 ServiceImage::create([
                     'service_details_id' => $serviceDetail->id,
-                    'images' => asset($serviceDetailFile),
+                    'images' => $serviceDetailFile,
                 ]);
             }
         }
@@ -184,7 +185,8 @@ class ServiceDetailsController extends Controller
         return $this->sendResponse($serviceDetail, 'Service Detail Updated');
     }
 
-    public function ServiceDetailsDelete($id){
+    public function ServiceDetailsDelete($id)
+    {
         $serviceDetail = ServiceDetails::find($id);
         if (!$serviceDetail) {
             return $this->sendError('Service Detail not found');
@@ -198,18 +200,24 @@ class ServiceDetailsController extends Controller
         return $this->sendResponse([], 'Service Detail Deleted');
     }
 
-    public function ServiceDetailsDeleteImage(Request $request, $id){
-        $serviceDetail = ServiceDetails::find($id);
-        if (!$serviceDetail) {
-            return $this->sendError('Service Detail not found');
+    public function ServiceDetailsDeleteImage($id)
+    {
+        $serviceImage = ServiceImage::find($id);
+
+        if (!$serviceImage) {
+            return $this->sendError('Service Image not found');
         }
-        $image = ServiceImage::find($request->image_id);
-        if (!$image) {
-            return $this->sendError('Image not found');
-        }
-        Helper::fileDelete($image->images);
-        $image->delete();
+
+        // Get the actual file path (remove the asset() part if present)
+        $filePath = str_replace(asset(''), '', $serviceImage->images);
+        $absolutePath = public_path($filePath);
+
+        // Delete the physical file
+        Helper::fileDelete($absolutePath);
+
+        // Delete the image record from the database
+        $serviceImage->delete();
+
         return $this->sendResponse([], 'Image Deleted');
     }
-
 }
