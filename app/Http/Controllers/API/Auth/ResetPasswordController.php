@@ -48,7 +48,7 @@ class ResetPasswordController extends Controller
         }
     }
 
-    public function VerifyOTP(Request $request): \Illuminate\Http\JsonResponse
+    public function verifyOTP(Request $request): \Illuminate\Http\JsonResponse
     {
         $request->validate([
             'email' => 'required|email|exists:users,email',
@@ -84,7 +84,7 @@ class ResetPasswordController extends Controller
         }
     }
 
-    public function ResetPassword(Request $request): \Illuminate\Http\JsonResponse
+    public function resetPassword(Request $request): \Illuminate\Http\JsonResponse
     {
         $request->validate([
             'email' => 'required|email|exists:users,email',

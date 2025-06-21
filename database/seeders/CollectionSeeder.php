@@ -2,18 +2,18 @@
 
 namespace Database\Seeders;
 
-use App\Models\Catalogue;
+use App\Models\Collection;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
-class CatalogueSeeder extends Seeder
+class CollectionSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $catalogues = [
+        $collections = [
             [
                 'name' => 'Technology',
                 'description' => 'Explore cutting-edge tech gadgets and accessories that elevate the gifting experience with practicality and innovation.',
@@ -86,8 +86,9 @@ class CatalogueSeeder extends Seeder
                 'status' => 'active'
             ]
         ];
-        foreach ($catalogues as $catalogue) {
-            Catalogue::create($catalogue);
+
+        foreach ($collections as $collection) {
+            Collection::create($collection);
         }
     }
 }

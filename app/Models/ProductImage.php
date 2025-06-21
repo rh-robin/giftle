@@ -23,8 +23,8 @@ class ProductImage extends Model
     }
 
     // Get the image url
-    public function getImageUrlAttribute()
+     public function getImageAttribute($value)
     {
-        return asset('uploads/products/' . $this->image);
+        return $value ? asset($value) : null;
     }
 }

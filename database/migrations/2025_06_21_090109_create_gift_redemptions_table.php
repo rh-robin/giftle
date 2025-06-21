@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('collections', function (Blueprint $table) {
+        Schema::create('gift_redemptions', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('description');
-            $table->string('image');
-            $table->string('slug');
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->unsignedBigInteger('order_id');
+            $table->unsignedBigInteger('dilivery_address_id');
+            $table->json('selected_items');
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('collections');
+        Schema::dropIfExists('gift_redemptions');
     }
 };

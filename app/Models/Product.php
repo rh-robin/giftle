@@ -28,13 +28,8 @@ class Product extends Model
         'status' => 'string'
     ];
 
-    /**
-     * Get the category that owns the product.
-     */
-    public function catalouge()
-    {
-        return $this->belongsTo(Catalogue::class);
-    }
+
+
 
     /**
      * Get the gifting that owns the product.
@@ -55,22 +50,25 @@ class Product extends Model
     /**
      * Get the primary image for the product (first image).
      */
-    public function primaryImage()
+    public function thumbnailImage()
     {
         return $this->hasOne(ProductImage::class)->oldestOfMany();
     }
-
     /**
      * get the product price range
      */
-    public function priceRange()
+    public function priceRanges()
     {
         return $this->hasMany(ProductPriceRange::class);
     }
 
     // get the product catalogues
-    public function catalogues()
+    public function collections()
     {
-        return $this->belongsToMany(Catalogue::class, 'product_catalogues', 'product_id', 'catalogue_id');
+        return $this->belongsToMany(Collection::class, 'product_collections', 'product_id', 'collection_id');
+    }
+     public function getImageAttribute($value)
+    {
+        return $value ? asset($value) : null;
     }
 }

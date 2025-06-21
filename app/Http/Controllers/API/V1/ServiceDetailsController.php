@@ -18,14 +18,14 @@ class ServiceDetailsController extends Controller
 {
     use ResponseTrait;
 
-    public function ServiceDetailsList()
+    public function serviceDetailsList()
     {
         $serviceDetails = ServiceDetails::orderBy('id', 'DESC')->get();
         $serviceDetails->load(['service', 'faqs', 'whatIncludes', 'caseStudies', 'images']);
         return $this->sendResponse($serviceDetails, 'Service Details List');
     }
 
-    public function ServiceDetailsCreate(ServiceDetailsRequest $request)
+    public function serviceDetailsCreate(ServiceDetailsRequest $request)
     {
 
         // Check if service detail already exists
@@ -90,7 +90,7 @@ class ServiceDetailsController extends Controller
         return $this->sendResponse($serviceDetail, 'Service Detail Created', 201);
     }
 
-    public function ServiceDetailsUpdate(Request $request, $id)
+    public function serviceDetailsUpdate(Request $request, $id)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -185,7 +185,7 @@ class ServiceDetailsController extends Controller
         return $this->sendResponse($serviceDetail, 'Service Detail Updated');
     }
 
-    public function ServiceDetailsDelete($id)
+    public function serviceDetailsDelete($id)
     {
         $serviceDetail = ServiceDetails::find($id);
         if (!$serviceDetail) {
@@ -200,7 +200,7 @@ class ServiceDetailsController extends Controller
         return $this->sendResponse([], 'Service Detail Deleted');
     }
 
-    public function ServiceDetailsDeleteImage($id)
+    public function serviceDetailsDeleteImage($id)
     {
         $serviceImage = ServiceImage::find($id);
 
