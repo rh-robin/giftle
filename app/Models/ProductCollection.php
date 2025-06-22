@@ -4,16 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ProductCatalogue extends Model
+class ProductCollection extends Model
 {
     protected $fillable = [
         'product_id',
-        'catalogue_id',
+        'collection_id',
     ];
 
     protected $casts = [
         'product_id' => 'integer',
-        'catalogue_id' => 'integer',
+        'collection_id' => 'integer',
     ];
 
 
@@ -21,9 +21,9 @@ class ProductCatalogue extends Model
     {
         return $this->belongsTo(Product::class);
     }
-
-    public function catalogue()
+    public function collections()
     {
-        return $this->belongsTo(Catalogue::class);
+        return $this->belongsToMany(Collection::class, 'product_collections', 'product_id', 'collection_id')
+            ->using(ProductCollection::class);
     }
 }

@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('catalogues', function (Blueprint $table) {
+        Schema::create('microsites', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('description');
-            $table->string('image');
-            $table->string('slug');
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->unsignedBigInteger('order_id');
+            $table->unsignedBigInteger('order_item_id');
+            $table->enum('ask_size', ['yes', 'no']);
+            $table->enum('input_type', ['plain_text', 'options']);
+            $table->json('options');
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('catalogues');
+        Schema::dropIfExists('microsites');
     }
 };

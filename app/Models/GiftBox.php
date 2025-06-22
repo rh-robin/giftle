@@ -24,8 +24,8 @@ class GiftBox extends Model
     ];
 
     //image asset
-    public function getImageUrlAttribute()
+   public function getImageAttribute($value)
     {
-        return $this->image ? asset($this->image) : null;
+        return $value ? asset($value) : null;
     }
 }

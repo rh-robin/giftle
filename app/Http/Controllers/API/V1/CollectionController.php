@@ -4,7 +4,7 @@ namespace App\Http\Controllers\API\V1;
 
 use Exception;
 use App\Helpers\Helper;
-use App\Models\Catalogue;
+use App\Models\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
@@ -12,25 +12,25 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\UniqueConstraintViolationException;
 
-class CataloguesController extends Controller
+class CollectionController extends Controller
 {
      use ResponseTrait;
-    // catalogue list
-    public function CatalogueList()
+    // collection list
+    public function collectionList()
     {
         try {
-            $catalogueList = Catalogue::latest()->select(['id', 'name', 'description', 'image', 'slug', 'status', 'created_at', 'updated_at'])->cursor();
-            if (empty($catalogueList)) {
-                return $this->sendError('catalogue List Not Found');
+            $collectionList = Collection::latest()->select(['id', 'name', 'description', 'image', 'slug', 'status', 'created_at', 'updated_at'])->cursor();
+            if (empty($collectionList)) {
+                return $this->sendError('Collection List Not Found');
             }
-            return $this->sendResponse($catalogueList, 'catalogue List');
+            return $this->sendResponse($collectionList, 'Collection List');
         } catch (Exception $e) {
             Log::error($e->getMessage());
             return $this->sendError('Something went wrong');
         }
     }
-    //catalogue create
-    public function CatalogueCreate(Request $request)
+    //collection create
+    public function collectionCreate(Request $request)
     {
         $request->validate([
             'name' => 'required',
@@ -42,29 +42,29 @@ class CataloguesController extends Controller
             $fileUrl = '';
             if ($request->hasFile('image')) {
                 $file = $request->file('image');
-                $fileUrl = Helper::fileUpload($file, 'catalogues', $file->getClientOriginalName());
+                $fileUrl = Helper::fileUpload($file, 'collections', $file->getClientOriginalName());
 
                 if (!$fileUrl) {
                     throw new Exception('File upload failed');
                 }
             }
-            $catalogue = Catalogue::create([
+            $collection = Collection::create([
                 'name' => $request->name,
                 'description' => $request->description,
                 'image' => $fileUrl ? asset($fileUrl) : null,
                 'slug' => $request->slug ?? Str::slug($request->name),
             ]);
-            return $this->sendResponse($catalogue, 'catalogue created successfully', 201);
+            return $this->sendResponse($collection, 'Collection created successfully', 201);
         } catch (UniqueConstraintViolationException $e) {
-            Log::error('Duplicate entry during catalogue creation: ' . $e->getMessage());
-            return $this->sendError('Duplicate entry for catalogue name', 409);
+            Log::error('Duplicate entry during collection creation: ' . $e->getMessage());
+            return $this->sendError('Duplicate entry for collection name', 409);
         } catch (Exception $e) {
-            Log::error('catalogue creation failed: ' . $e->getMessage());
+            Log::error('Collection creation failed: ' . $e->getMessage());
             return $this->sendError('Something went wrong: ' . $e->getMessage(), 500);
         }
     }
-    //catalogue update
-    public function CatalogueUpdate(Request $request, $id)
+    //collection update
+    public function collectionUpdate(Request $request, $id)
     {
         $request->validate([
             'name' => 'required',
@@ -72,52 +72,52 @@ class CataloguesController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:20048',
         ]);
         try {
-            $catalogue = Catalogue::find($id);
-            if (empty($catalogue)) {
-                return $this->sendError('catalogue Not Found');
+            $collection = Collection::find($id);
+            if (empty($collection)) {
+                return $this->sendError('collection Not Found');
             }
             //file upload
             $fileUrl = '';
             if ($request->hasFile('image')) {
                 //delete old file
-                if (!empty($catalogue->image)) {
-                    Helper::fileDelete($catalogue->image);
+                if (!empty($collection->image)) {
+                    Helper::fileDelete($collection->image);
                 }
                 $file = $request->file('image');
-                $fileUrl = Helper::fileUpload($file, 'catalogues', $file->getClientOriginalName());
+                $fileUrl = Helper::fileUpload($file, 'collections', $file->getClientOriginalName());
             }
-            $catalogue->update([
+            $collection->update([
                 'name' => $request->name,
                 'description' => $request->description,
                 'image' => asset($fileUrl),
                 'slug' => Str::slug($request->name),
             ]);
 
-            if (empty($catalogue)) {
-                return $this->sendError('catalogue Not Updated');
+            if (empty($collection)) {
+                return $this->sendError('collection Not Updated');
             }
-            return $this->sendResponse($catalogue, 'catalogue Updated');
+            return $this->sendResponse($collection, 'Collection Updated');
         } catch (UniqueConstraintViolationException $e) {
-            Log::error('Duplicate entry during catalogue creation: ' . $e->getMessage());
-            return $this->sendError('Duplicate entry for catalogue name', 409);
+            Log::error('Duplicate entry during collection creation: ' . $e->getMessage());
+            return $this->sendError('Duplicate entry for collection name', 409);
         } catch (Exception $e) {
-            Log::error('catalogue creation failed: ' . $e->getMessage());
+            Log::error('Collection creation failed: ' . $e->getMessage());
             return $this->sendError('Something went wrong: ' . $e->getMessage(), 500);
         }
     }
-    //catalogue delete
-    public function CatalogueDelete($id)
+    //collection delete
+    public function collectionDelete($id)
     {
         try {
-            $catalogue = Catalogue::find($id);
-            if (empty($catalogue)) {
-                return $this->sendError('catalogue Not Found');
+            $collection = Collection::find($id);
+            if (empty($collection)) {
+                return $this->sendError('collection Not Found');
             }
-            if (!empty($catalogue->image)) {
-                Helper::fileDelete($catalogue->image);
+            if (!empty($collection->image)) {
+                Helper::fileDelete($collection->image);
             }
-            $catalogue->delete();
-            return $this->sendResponse($catalogue, 'catalogue Deleted');
+            $collection->delete();
+            return $this->sendResponse($collection, 'Collection Deleted');
         } catch (Exception $e) {
             Log::error($e->getMessage());
             return $this->sendError('Something went wrong');

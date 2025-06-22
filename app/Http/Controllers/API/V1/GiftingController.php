@@ -16,7 +16,7 @@ class GiftingController extends Controller
 {
     use ResponseTrait;
     // gifiting list
-    public function GiftingList()
+    public function giftingList()
     {
         try {
             $gifitingList = Gifting::latest()->select(['id', 'name', 'description', 'image', 'slug', 'status', 'created_at', 'updated_at'])->cursor();
@@ -30,7 +30,7 @@ class GiftingController extends Controller
         }
     }
     //gifiting create
-    public function GiftingCreate(Request $request)
+    public function giftingCreate(Request $request)
     {
         $request->validate([
             'name' => 'required',
@@ -64,7 +64,7 @@ class GiftingController extends Controller
         }
     }
     //gifiting update
-    public function GiftingUpdate(Request $request, $id)
+    public function giftingUpdate(Request $request, $id)
     {
         $request->validate([
             'name' => 'required',
@@ -106,7 +106,7 @@ class GiftingController extends Controller
         }
     }
     //gifiting delete
-    public function GiftingDelete($id)
+    public function giftingDelete($id)
     {
         try {
             $gifiting = Gifting::find($id);
@@ -123,8 +123,4 @@ class GiftingController extends Controller
             return $this->sendError('Something went wrong');
         }
     }
-
-    //gift box controller store method
-
-
 }

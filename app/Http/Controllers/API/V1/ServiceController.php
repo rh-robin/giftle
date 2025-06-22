@@ -10,16 +10,14 @@ use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use Illuminate\Database\QueryException;
 use App\Http\Requests\V1\ServiceRequest;
 use Illuminate\Database\UniqueConstraintViolationException;
 
 class ServiceController extends Controller
 {
-
     use ResponseTrait;
     // service list
-    public function ServiceList()
+    public function serviceList()
     {
         try {
             $serviceList = Service::latest()->select(['id', 'name', 'description', 'image', 'slug'])->cursor();
@@ -33,7 +31,7 @@ class ServiceController extends Controller
         }
     }
     //service create
-    public function ServiceCreate(ServiceRequest $request)
+    public function serviceCreate(ServiceRequest $request)
     {
         try {
             // File upload
@@ -62,7 +60,7 @@ class ServiceController extends Controller
         }
     }
     //service update
-    public function ServiceUpdate(Request $request, $id)
+    public function serviceUpdate(Request $request, $id)
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255', 'min:3'],
@@ -98,7 +96,7 @@ class ServiceController extends Controller
         return $this->sendResponse($service, 'Service Updated');
     }
     //service delete
-    public function ServiceDelete($id)
+    public function serviceDelete($id)
     {
         try {
             $service = Service::find($id);

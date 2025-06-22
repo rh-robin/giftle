@@ -17,11 +17,18 @@ return new class extends Migration
             $table->string('name');
             $table->string('email');
             $table->string('phone');
-            $table->integer('number_gift_packages');
+            $table->integer('number_of_boxes');
             $table->integer('estimated_budget');
             $table->string('currency')->default('USD');
             $table->boolean('products_in_bag')->default(false);
             $table->enum('status', ['pending', 'processing', 'completed', 'cancelled'])->default('pending');
+            $table->string('campain_name')->nullable();
+            $table->integer('redeem_quantity')->default(0);
+            $table->enum('multiple_delivery_address', ['yes', 'no'])->default('no');
+            $table->enum('campain_type', ['microsite', 'gift_redeemption']);
+            $table->enum('gift_box_type', ['gifte_branded', 'custom_branding', 'plain']);
+            $table->string('slug');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

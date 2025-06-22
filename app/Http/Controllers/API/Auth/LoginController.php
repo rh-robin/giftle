@@ -66,14 +66,4 @@ class LoginController extends Controller
         }
     }
 
-    public function refreshToken(): \Illuminate\Http\JsonResponse
-    {
-        try {
-            $refreshToken = auth('api')->refresh();
-
-            return $this->sendResponse('Token refreshed successfully', ['token' => $refreshToken]);
-        } catch (Exception $e) {
-            return $this->sendError('Something went wrong');
-        }
-    }
 }

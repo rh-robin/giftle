@@ -12,13 +12,13 @@ use App\Http\Requests\V1\GiftBoxRequest;
 class GiftBoxController extends Controller
 {
     use ResponseTrait;
-    public function GiftBoxList()
+    public function giftBoxList()
     {
         $gift_box = GiftBox::latest()->get();
         return $this->sendResponse($gift_box,'Gift Box List');
     }
 
-    public function GiftBoxCreate(GiftBoxRequest $request)
+    public function giftBoxCreate(GiftBoxRequest $request)
     {
         $validated = $request->validated();
 
@@ -38,10 +38,10 @@ class GiftBoxController extends Controller
         return $this->sendResponse($gift_box,'Gift Box Created');
     }
 
-    public function GiftBoxUpdate(Request $request, $id)
+    public function giftBoxUpdate(Request $request, $id)
     {
         $request->validate([
-             'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'gifte_branded_price' => 'required|integer|min:0',
             'custom_branding_price' => 'required|integer|min:0',
             'plain_price' => 'required|integer|min:0',
@@ -69,7 +69,7 @@ class GiftBoxController extends Controller
         return $this->sendResponse($gift_box,'Gift Box Updated');
     }
 
-    public function GiftBoxDelete($id)
+    public function giftBoxDelete($id)
     {
         $gift_box = GiftBox::find($id);
         if (!$gift_box) {
