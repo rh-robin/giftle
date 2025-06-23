@@ -7,24 +7,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ProductImage extends Model
 {
-    use HasFactory;
+    protected $table = 'product_images';
 
     protected $fillable = [
         'product_id',
-        'image'
+        'image',
     ];
 
-    /**
-     * Get the product that owns the image.
-     */
+    // Relationship
     public function product()
     {
         return $this->belongsTo(Product::class);
-    }
-
-    // Get the image url
-     public function getImageAttribute($value)
-    {
-        return $value ? asset($value) : null;
     }
 }

@@ -13,22 +13,22 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('gifting_id');
-            $table->unsignedBigInteger('collection_id');
+            $table->unsignedBigInteger('gifting_id')->nullable();
+            $table->unsignedBigInteger('category_id');
             $table->string('name');
             $table->string('description');
-            $table->integer('price');
+            $table->string('thumbnail');
             $table->integer('quantity');
-            $table->integer('minimum_order_quantity');
-            $table->string('estimated_delivery_time');
+            $table->integer('minimum_order_quantity')->nullable();
+            $table->string('estimated_delivery_time')->nullable();
             $table->enum('product_type', ['product', 'bag']);
-            $table->string('slug');
+            $table->string('slug')->unique();
             $table->string('sku')->unique();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
 
-            $table->foreign('gifting_id')->references('id')->on('giftings')->onDelete('cascade');
-            $table->foreign('collection_id')->references('id')->on('collections')->onDelete('cascade');
+            $table->foreign('gifting_id')->references('id')->on('giftings')->onDelete('set null');
+            $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
         });
     }
 

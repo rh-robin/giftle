@@ -9,7 +9,7 @@ class Gifting extends Model
     protected $fillable = ['name', 'image', 'description', 'slug', 'status'];
     public function products()
     {
-        return $this->hasMany(Product::class, 'giftings_id');
+        return $this->hasMany(Product::class, 'gifting_id');
     }
     public function getImageAttribute($value)
     {
