@@ -15,42 +15,42 @@ class GiftBoxSeeder extends Seeder
     {
         GiftBox::create([
             'name' => 'Gift Box',
-            'gifte_branded_price' => 100,
+            'giftle_branded_price' => 100,
             'custom_branding_price' => 150,
             'plain_price' => 50,
             'image' => 'backend/img/automated.png',
         ]);
         GiftBox::create([
             'name' => 'Craft Gift Boxes',
-            'gifte_branded_price' => 30,
+            'giftle_branded_price' => 30,
             'custom_branding_price' => 150,
             'plain_price' => 50,
             'image' => 'backend/img/automated.png',
         ]);
         GiftBox::create([
             'name' => 'Luxury gift box',
-            'gifte_branded_price' => 100,
+            'giftle_branded_price' => 100,
             'custom_branding_price' => 150,
             'plain_price' => 50,
             'image' => 'backend/img/automated.png',
         ]);
         GiftBox::create([
             'name' => 'Packing tape',
-            'gifte_branded_price' => 100,
+            'giftle_branded_price' => 100,
             'custom_branding_price' => 150,
             'plain_price' => 50,
             'image' => 'backend/img/automated.png',
         ]);
         GiftBox::create([
             'name' => 'Paper Polymaile',
-            'gifte_branded_price' => 100,
+            'giftle_branded_price' => 100,
             'custom_branding_price' => 150,
             'plain_price' => 50,
             'image' => 'backend/img/automated.png',
         ]);
         GiftBox::create([
             'name' => 'Poly mailer',
-            'gifte_branded_price' => 100,
+            'giftle_branded_price' => 100,
             'custom_branding_price' => 150,
             'plain_price' => 50,
             'image' => 'backend/img/automated.png',

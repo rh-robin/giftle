@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\API\V1;
 
+use App\Models\CollectionImage;
 use Exception;
 use App\Helpers\Helper;
 use App\Models\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
@@ -14,113 +16,239 @@ use Illuminate\Database\UniqueConstraintViolationException;
 
 class CollectionController extends Controller
 {
-     use ResponseTrait;
-    // collection list
+    use ResponseTrait;
+
+    // List all collections with their images
     public function collectionList()
     {
         try {
-            $collectionList = Collection::latest()->select(['id', 'name', 'description', 'image', 'slug', 'status', 'created_at', 'updated_at'])->cursor();
-            if (empty($collectionList)) {
-                return $this->sendError('Collection List Not Found');
+            $collections = Collection::latest()
+                ->select(['id', 'title', 'sub_title'])
+                ->get();
+
+            if ($collections->isEmpty()) {
+                return $this->sendError('No collections found', 404);
             }
-            return $this->sendResponse($collectionList, 'Collection List');
+
+            return $this->sendResponse($collections, 'Collection list retrieved successfully');
         } catch (Exception $e) {
-            Log::error($e->getMessage());
-            return $this->sendError('Something went wrong');
+            Log::error('Failed to retrieve collection list: ' . $e->getMessage());
+            return $this->sendError('Something went wrong', 500);
         }
     }
-    //collection create
+
+    // Create a new collection with multiple images
     public function collectionCreate(Request $request)
     {
         $request->validate([
-            'name' => 'required',
-            'description' => 'required',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:20048',
+            'title' => 'required|string|max:255',
+            'sub_title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'status' => 'nullable|in:active,inactive',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:20480',
         ]);
-        try {
-            // File upload
-            $fileUrl = '';
-            if ($request->hasFile('image')) {
-                $file = $request->file('image');
-                $fileUrl = Helper::fileUpload($file, 'collections', $file->getClientOriginalName());
 
-                if (!$fileUrl) {
-                    throw new Exception('File upload failed');
+        DB::beginTransaction();
+        try {
+            $slug = $request->slug ?? Str::slug($request->title);
+            $slug = $this->makeUniqueSlug($slug);
+
+            $collection = Collection::create([
+                'title' => $request->title,
+                'sub_title' => $request->sub_title,
+                'content' => $request->content,
+                'slug' => $slug,
+                'status' => $request->status ?? 'active',
+            ]);
+
+            // Handle multiple image uploads
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $file) {
+                    $filePath = Helper::fileUpload($file, 'collections', $file->getClientOriginalName());
+                    if ($filePath) {
+                        CollectionImage::create([
+                            'collection_id' => $collection->id,
+                            'image' => $filePath,
+                        ]);
+                    } else {
+                        throw new Exception('Image upload failed');
+                    }
                 }
             }
-            $collection = Collection::create([
-                'name' => $request->name,
-                'description' => $request->description,
-                'image' => $fileUrl ? asset($fileUrl) : null,
-                'slug' => $request->slug ?? Str::slug($request->name),
-            ]);
-            return $this->sendResponse($collection, 'Collection created successfully', 201);
+
+            // Reload collection with images
+            $collection->load('images:image,collection_id');
+
+            // Prepare response data with image_url
+            $responseData = $collection->toArray();
+            $responseData['images'] = $collection->images->map(function ($image) {
+                return [
+                    'image' => $image->image,
+                    'image_url' => $image->image ? asset($image->image) : null,
+                    'collection_id' => $image->collection_id,
+                ];
+            })->toArray();
+
+            DB::commit();
+            return $this->sendResponse($responseData, 'Collection created successfully', 201);
         } catch (UniqueConstraintViolationException $e) {
+            DB::rollBack();
             Log::error('Duplicate entry during collection creation: ' . $e->getMessage());
-            return $this->sendError('Duplicate entry for collection name', 409);
+            return $this->sendError('Duplicate entry for collection', 409);
         } catch (Exception $e) {
+            DB::rollBack();
             Log::error('Collection creation failed: ' . $e->getMessage());
             return $this->sendError('Something went wrong: ' . $e->getMessage(), 500);
         }
     }
-    //collection update
+
+    // Update an existing collection
     public function collectionUpdate(Request $request, $id)
     {
         $request->validate([
-            'name' => 'required',
-            'description' => 'required',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:20048',
+            'title' => 'required|string|max:255',
+            'sub_title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'status' => 'nullable|in:active,inactive',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:20480',
         ]);
+
+        DB::beginTransaction();
         try {
             $collection = Collection::find($id);
-            if (empty($collection)) {
-                return $this->sendError('collection Not Found');
+            if (!$collection) {
+                DB::rollBack();
+                return $this->sendError('Collection not found', 404);
             }
-            //file upload
-            $fileUrl = '';
-            if ($request->hasFile('image')) {
-                //delete old file
-                if (!empty($collection->image)) {
-                    Helper::fileDelete($collection->image);
-                }
-                $file = $request->file('image');
-                $fileUrl = Helper::fileUpload($file, 'collections', $file->getClientOriginalName());
-            }
+
+            $slug = $request->slug ?? Str::slug($request->title);
+            $slug = $this->makeUniqueSlug($slug, $collection->id);
+
+            // Update collection
             $collection->update([
-                'name' => $request->name,
-                'description' => $request->description,
-                'image' => asset($fileUrl),
-                'slug' => Str::slug($request->name),
+                'title' => $request->title,
+                'sub_title' => $request->sub_title,
+                'content' => $request->content,
+                'slug' => $slug,
+                'status' => $request->status ?? $collection->status,
             ]);
 
-            if (empty($collection)) {
-                return $this->sendError('collection Not Updated');
+            // Handle new image uploads
+            if ($request->hasFile('images')) {
+                // Delete existing images
+                foreach ($collection->images as $image) {
+                    Helper::fileDelete($image->image);
+                    $image->delete();
+                }
+
+                // Upload new images
+                foreach ($request->file('images') as $file) {
+                    $filePath = Helper::fileUpload($file, 'collections', $file->getClientOriginalName());
+                    if ($filePath) {
+                        CollectionImage::create([
+                            'collection_id' => $collection->id,
+                            'image' => $image->image,
+                        ]);
+                    } else {
+                        throw new Exception('Image upload failed');
+                    }
+                }
             }
-            return $this->sendResponse($collection, 'Collection Updated');
+
+            // Reload collection with images
+            $collection->load('images:image,collection_id');
+
+            // Prepare response data with image_url
+            $responseData = $collection->toArray();
+            $responseData['images'] = $collection->images->map(function ($image) {
+                return [
+                    'image' => $image->image,
+                    'image_url' => $image->image ? asset($image->image) : null,
+                    'collection_id' => $image->collection_id,
+                ];
+            })->toArray();
+
+            DB::commit();
+            return $this->sendResponse($responseData, 'Collection updated successfully');
         } catch (UniqueConstraintViolationException $e) {
-            Log::error('Duplicate entry during collection creation: ' . $e->getMessage());
-            return $this->sendError('Duplicate entry for collection name', 409);
+            DB::rollBack();
+            Log::error('Duplicate entry during collection update: ' . $e->getMessage());
+            return $this->sendError('Duplicate entry for collection', 409);
         } catch (Exception $e) {
-            Log::error('Collection creation failed: ' . $e->getMessage());
+            DB::rollBack();
+            Log::error('Collection update failed: ' . $e->getMessage());
             return $this->sendError('Something went wrong: ' . $e->getMessage(), 500);
         }
     }
-    //collection delete
+
+
+
+    // show details of a collection
+    public function collectionShow($id)
+    {
+        try {
+            $collection = Collection::with('images:image,collection_id')
+                ->select(['id', 'title', 'sub_title', 'content', 'slug', 'status', 'created_at', 'updated_at'])
+                ->find($id);
+
+            if (!$collection) {
+                return $this->sendError('Collection not found', 404);
+            }
+
+            // Prepare response data with image_url
+            $responseData = $collection->toArray();
+            $responseData['images'] = $collection->images->map(function ($image) {
+                return [
+                    'image' => $image->image,
+                    'image_url' => $image->image ? asset($image->image) : null,
+                    'collection_id' => $image->collection_id,
+                ];
+            })->toArray();
+
+            return $this->sendResponse($responseData, 'Collection retrieved successfully');
+        } catch (Exception $e) {
+            Log::error('Failed to retrieve collection: ' . $e->getMessage());
+            return $this->sendError('Something went wrong', 500);
+        }
+    }
+
+
+    // Delete a collection
     public function collectionDelete($id)
     {
         try {
             $collection = Collection::find($id);
-            if (empty($collection)) {
-                return $this->sendError('collection Not Found');
+            if (!$collection) {
+                return $this->sendError('Collection not found', 404);
             }
-            if (!empty($collection->image)) {
-                Helper::fileDelete($collection->image);
+
+            // Delete associated images (files and records)
+            foreach ($collection->images as $image) {
+                Helper::fileDelete($image->image);
             }
+
+            // Delete collection (cascades to collection_images via foreign key)
             $collection->delete();
-            return $this->sendResponse($collection, 'Collection Deleted');
+
+            return $this->sendResponse(null, 'Collection deleted successfully');
         } catch (Exception $e) {
-            Log::error($e->getMessage());
-            return $this->sendError('Something went wrong');
+            Log::error('Collection deletion failed: ' . $e->getMessage());
+            return $this->sendError('Something went wrong', 500);
         }
+    }
+
+    // Helper method to generate unique slugs
+    protected function makeUniqueSlug($slug, $excludeId = null)
+    {
+        $originalSlug = $slug;
+        $count = 1;
+
+        while (Collection::where('slug', $slug)
+            ->where('id', '!=', $excludeId)
+            ->exists()) {
+            $slug = $originalSlug . '-' . $count++;
+        }
+
+        return $slug;
     }
 }

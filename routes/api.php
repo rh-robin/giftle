@@ -71,6 +71,7 @@ Route::group(['middleware' => 'auth:sanctum'], static function () {
     //Collection group controller
     Route::controller(CollectionController::class)->prefix('v1/collection')->group(function () {
         Route::get('/list', 'collectionList');
+        Route::get('/view/{id}', 'collectionShow');
         Route::post('/create', 'collectionCreate');
         Route::post('/update/{id}', 'collectionUpdate');
         Route::delete('/delete/{id}', 'collectionDelete');
@@ -96,7 +97,8 @@ Route::prefix('v1/')->group(function () {
     //gifting
     Route::get('gift-box', [GiftBoxApiController::class, 'index']);
     //Collection route
-    Route::get('collections', [CollectionApiController::class, 'index']);
+    Route::get('collections', [CollectionApiController::class, 'getCollectionsDropdown']);
+    Route::get('collections/{id}', [CollectionApiController::class, 'collectionShow']);
     //product route
     Route::get('products', [ProductApiController::class, 'index']);
     //create Order

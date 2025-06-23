@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class GiftBox extends Model
 {
-
+    protected $table = 'gift_boxes';
 
     protected $fillable = [
         'name',
-        'gifte_branded_price',
+        'giftle_branded_price',
         'custom_branding_price',
         'plain_price',
         'status',
@@ -18,14 +18,13 @@ class GiftBox extends Model
     ];
 
     protected $casts = [
-        'gifte_branded_price' => 'integer',
+        'giftle_branded_price' => 'integer',
         'custom_branding_price' => 'integer',
         'plain_price' => 'integer',
     ];
 
-    //image asset
-   public function getImageAttribute($value)
+    /*public function getImageAttribute($value)
     {
         return $value ? asset($value) : null;
-    }
+    }*/
 }

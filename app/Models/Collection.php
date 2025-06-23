@@ -6,22 +6,39 @@ use Illuminate\Database\Eloquent\Model;
 
 class Collection extends Model
 {
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'collections';
 
-    protected $fillable =
-    [
-        'name',
-        'description',
-        'image',
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<string>
+     */
+    protected $fillable = [
+        'title',
+        'sub_title',
+        'content',
         'slug',
         'status',
     ];
 
-    public function products()
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'status' => 'string',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    public function images()
     {
-        return $this->belongsToMany(Product::class, 'product_collections', 'collection_id', 'product_id');
-    }
-    public function getImageAttribute($value)
-    {
-        return $value ? asset($value) : null;
+        return $this->hasMany(CollectionImage::class, 'collection_id');
     }
 }

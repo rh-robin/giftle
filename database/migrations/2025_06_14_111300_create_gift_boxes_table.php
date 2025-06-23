@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('gift_boxes', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->integer('gifte_branded_price');
+            $table->integer('giftle_branded_price');
             $table->integer('custom_branding_price');
             $table->integer('plain_price');
             $table->string('image');

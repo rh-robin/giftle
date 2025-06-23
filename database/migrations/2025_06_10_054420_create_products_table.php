@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('giftings_id');
+            $table->unsignedBigInteger('gifting_id');
+            $table->unsignedBigInteger('collection_id');
             $table->string('name');
             $table->string('description');
             $table->integer('price');
@@ -24,8 +25,10 @@ return new class extends Migration
             $table->string('slug');
             $table->string('sku')->unique();
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->foreign('giftings_id')->references('id')->on('giftings')->onDelete('cascade');
             $table->timestamps();
+
+            $table->foreign('gifting_id')->references('id')->on('giftings')->onDelete('cascade');
+            $table->foreign('collection_id')->references('id')->on('collections')->onDelete('cascade');
         });
     }
 
