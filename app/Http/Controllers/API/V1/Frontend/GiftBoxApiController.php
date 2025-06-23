@@ -20,7 +20,7 @@ class GiftBoxApiController extends Controller
 
         $giftBoxes->each(function ($giftBox) {
             $giftBox->from_price = min(
-                $giftBox->gifte_branded_price,
+                $giftBox->giftle_branded_price,
                 $giftBox->custom_branding_price,
                 $giftBox->plain_price
             );

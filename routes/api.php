@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\API\V1\CategoryController;
+use App\Http\Controllers\API\V1\Frontend\CategoryApiController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Auth\LoginController;
 use App\Http\Controllers\API\V1\GiftBoxController;
@@ -77,6 +79,14 @@ Route::group(['middleware' => 'auth:sanctum'], static function () {
         Route::delete('/delete/{id}', 'collectionDelete');
     });
 
+    //Category controller
+    Route::controller(CategoryController::class)->prefix('v1/category')->group(function () {
+        Route::get('/list', 'categoryList');
+        Route::post('/create', 'categoryCreate');
+        Route::post('/update/{id}', 'categoryUpdate');
+        Route::delete('/delete/{id}', 'categoryDelete');
+    });
+
     //product group controller
     Route::controller(ProductController::class)->prefix('v1/product')->group(function () {
         Route::get('/list', 'productList');
@@ -99,6 +109,10 @@ Route::prefix('v1/')->group(function () {
     //Collection route
     Route::get('collections', [CollectionApiController::class, 'getCollectionsDropdown']);
     Route::get('collections/{id}', [CollectionApiController::class, 'collectionShow']);
+
+    //Collection route
+    Route::get('categories', [CategoryApiController::class, 'index']);
+
     //product route
     Route::get('products', [ProductApiController::class, 'index']);
     //create Order

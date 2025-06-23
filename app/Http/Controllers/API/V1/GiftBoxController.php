@@ -18,7 +18,7 @@ class GiftBoxController extends Controller
     public function giftBoxList()
     {
         try {
-            $giftBoxes = GiftBox::latest()->get();
+            $giftBoxes = GiftBox::latest();
 
 
             if ($giftBoxes->isEmpty()) {
