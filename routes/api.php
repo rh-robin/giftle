@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\API\V1\CategoryController;
+use App\Http\Controllers\API\V1\ConversionRateController;
 use App\Http\Controllers\API\V1\Frontend\CategoryApiController;
+use App\Http\Controllers\API\V1\Frontend\OrderApiController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Auth\LoginController;
 use App\Http\Controllers\API\V1\GiftBoxController;
@@ -35,8 +37,11 @@ Route::post('/reset-password', [ResetPasswordController::class, 'resetPassword']
 Route::group(['middleware' => 'auth:sanctum'], static function () {
     Route::get('/refresh-token', [LoginController::class, 'refreshToken']);
     Route::post('/logout', [LogoutController::class, 'logout']);
+});
 
 
+
+Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     //Service group controller
     Route::controller(ServiceController::class)->prefix('v1/service')->group(function () {
         Route::get('/list', 'serviceList');
@@ -95,7 +100,17 @@ Route::group(['middleware' => 'auth:sanctum'], static function () {
         Route::post('/update/{id}', 'productUpdate');
         Route::delete('/delete/{id}', 'productDelete');
     });
+
+
+    //conversion rate controller
+    Route::controller(ConversionRateController::class)->prefix('v1/conversion-rate')->group(function () {
+        Route::post('/store', 'conversionRateStore');
+    });
 });
+
+
+
+
 
 //frontend all api routes
 Route::prefix('v1/')->group(function () {
@@ -117,6 +132,6 @@ Route::prefix('v1/')->group(function () {
     //product route
     Route::get('products', [ProductApiController::class, 'index']);
     //create Order
-    Route::post('create-order', [CreateOrderApiController::class, 'createOrder']);
+    Route::post('create-order', [OrderApiController::class, 'store']);
 
 });

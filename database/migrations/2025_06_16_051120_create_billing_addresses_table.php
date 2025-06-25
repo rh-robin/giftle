@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('billing_addresses', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('order_id');
-            $table->string('recipient_name');
+            $table->string('biller_name');
             $table->string('email');
             $table->string('phone');
             $table->string('address_line_1');
@@ -23,6 +23,8 @@ return new class extends Migration
             $table->string('postal_code');
             $table->string('post_town');
             $table->timestamps();
+
+            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
         });
     }
 

@@ -26,6 +26,6 @@ class GiftRedemption extends Model
 
     public function deliveryAddress()
     {
-        return $this->belongsTo(DeliveryAddresse::class, 'dilivery_address_id');
+        return $this->belongsTo(DeliveryAddress::class, 'dilivery_address_id');
     }
 }

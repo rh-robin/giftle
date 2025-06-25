@@ -18,7 +18,7 @@ class GiftBoxController extends Controller
     public function giftBoxList()
     {
         try {
-            $giftBoxes = GiftBox::latest();
+            $giftBoxes = GiftBox::latest()->get();
 
 
             if ($giftBoxes->isEmpty()) {
@@ -36,7 +36,7 @@ class GiftBoxController extends Controller
             return $this->sendResponse($responseData, 'Gift box list retrieved successfully');
         } catch (\Exception $e) {
             Log::error('Failed to retrieve gift box list: ' . $e->getMessage());
-            return $this->sendError('Something went wrong', 500);
+            return $this->sendError($e->getMessage(),'Something went wrong', 500);
         }
     }
 

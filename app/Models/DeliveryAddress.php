@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class BillingAddresse extends Model
+class DeliveryAddress extends Model
 {
-    protected $table = 'billing_addresses';
-     protected $fillable = [
+    protected $table = 'delivery_addresses';
+
+    protected $fillable = [
         'order_id',
         'recipient_name',
         'email',
@@ -16,11 +17,12 @@ class BillingAddresse extends Model
         'address_line_2',
         'address_line_3',
         'postal_code',
-        'post_town'
+        'post_town',
     ];
 
+    // Relationships
     public function order()
     {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(Order::class, 'order_id');
     }
 }

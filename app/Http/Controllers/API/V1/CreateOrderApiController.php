@@ -11,8 +11,8 @@ use App\Models\OrderItem;
 use Illuminate\Support\Str;
 use App\Traits\ResponseTrait;
 use App\Models\GiftRedemption;
-use App\Models\BillingAddresse;
-use App\Models\DeliveryAddresse;
+use App\Models\BillingAddress;
+use App\Models\DeliveryAddress;
 use App\Models\ProductPriceRange;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -52,7 +52,7 @@ class CreateOrderApiController extends Controller
             ]);
 
             // Create Delivery Address
-            $deliveryAddress = DeliveryAddresse::create([
+            $deliveryAddress = DeliveryAddress::create([
                 'order_id' => $order->id,
                 'recipient_name' => $validated['delivery_address']['recipient_name'],
                 'email' => $validated['delivery_address']['email'],
@@ -65,7 +65,7 @@ class CreateOrderApiController extends Controller
             ]);
 
             // Create Billing Address
-            $billingAddress = BillingAddresse::create([
+            $billingAddress = BillingAddress::create([
                 'order_id' => $order->id,
                 'recipient_name' => $validated['billing_address']['recipient_name'],
                 'email' => $validated['billing_address']['email'],

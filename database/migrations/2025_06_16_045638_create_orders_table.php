@@ -17,19 +17,25 @@ return new class extends Migration
             $table->string('name');
             $table->string('email');
             $table->string('phone');
-            $table->integer('number_of_boxes');
-            $table->integer('estimated_budget');
-            $table->string('currency')->default('USD');
+            $table->integer('number_of_boxes')->nullable();
+            $table->integer('estimated_budget')->nullable();
             $table->boolean('products_in_bag')->default(false);
-            $table->enum('status', ['pending', 'processing', 'completed', 'cancelled'])->default('pending');
-            $table->string('campain_name')->nullable();
-            $table->integer('redeem_quantity')->default(0);
-            $table->enum('multiple_delivery_address', ['yes', 'no'])->default('no');
-            $table->enum('campain_type', ['microsite', 'gift_redeemption']);
-            $table->enum('gift_box_type', ['gifte_branded', 'custom_branding', 'plain']);
-            $table->string('slug');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->unsignedBigInteger('gift_box_id')->nullable();
+            $table->enum('gift_box_type', ['giftle_branded', 'custom_branding', 'plain'])->nullable();
+            $table->enum('status', ['pending', 'action', 'completed', 'cancelled', 'processing'])->default('pending');
+            $table->enum('campaign_type', ['microsite', 'gift_redemption']);
+            $table->string('campaign_name')->nullable();
+            $table->integer('gift_redeem_quantity')->default(0);
+            $table->boolean('multiple_delivery_address')->default(false);
+            $table->string('slug')->unique();
+            $table->decimal('price_usd', 10, 2);
+            $table->string('user_currency')->nullable();
+            $table->decimal('exchange_rate', 10, 2)->nullable();
+            $table->decimal('price_in_currency', 10, 2)->nullable();
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('gift_box_id')->references('id')->on('gift_boxes')->onDelete('set null');
         });
     }
 
