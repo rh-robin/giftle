@@ -26,7 +26,6 @@ class ProductController extends Controller
     {
         try {
             $products = Product::latest()
-                ->select(['id', 'gifting_id', 'category_id', 'name', 'description', 'thumbnail', 'price', 'quantity', 'minimum_order_quantity', 'estimated_delivery_time', 'product_type', 'slug', 'sku', 'status', 'created_at', 'updated_at'])
                 ->with(['images:id,product_id,image', 'priceRanges:id,product_id,min_quantity,max_quantity,price'])
                 ->get();
 
@@ -62,7 +61,7 @@ class ProductController extends Controller
             return $this->sendResponse($responseData, 'Product list retrieved successfully');
         } catch (Exception $e) {
             Log::error('Failed to retrieve product list: ' . $e->getMessage());
-            return $this->sendError('Something went wrong', 500);
+            return $this->sendError($e->getMessage(), 'Something went wrong', 500);
         }
     }
 

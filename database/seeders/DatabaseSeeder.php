@@ -15,9 +15,9 @@ class DatabaseSeeder extends Seeder
     {
 
         $this->call(UserSeeder::class);
-        $this->call(ServiceSeeder::class);
-        $this->call(GiftingSeeder::class);
-        $this->call(GiftBoxSeeder::class);
+        //$this->call(ServiceSeeder::class);
+        //$this->call(GiftingSeeder::class);
+        //$this->call(GiftBoxSeeder::class);
         //$this->call(CollectionSeeder::class);
     }
 }
