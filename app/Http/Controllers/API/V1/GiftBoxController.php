@@ -21,9 +21,6 @@ class GiftBoxController extends Controller
             $giftBoxes = GiftBox::latest()->get();
 
 
-            if ($giftBoxes->isEmpty()) {
-                return $this->sendError('No gift boxes found', 404);
-            }
 
             // Prepare response data with image_url
             $responseData = $giftBoxes->map(function ($giftBox) {

@@ -26,9 +26,6 @@ class CollectionController extends Controller
                 ->select(['id', 'title', 'sub_title'])
                 ->get();
 
-            if ($collections->isEmpty()) {
-                return $this->sendError('No collections found', 404);
-            }
 
             return $this->sendResponse($collections, 'Collection list retrieved successfully');
         } catch (Exception $e) {

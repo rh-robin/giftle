@@ -134,9 +134,6 @@ class CategoryController extends Controller
                 ->select(['id', 'name', 'description', 'image', 'slug', 'status', 'created_at', 'updated_at'])
                 ->get();
 
-            if ($categories->isEmpty()) {
-                return $this->sendError('No categories found', 404);
-            }
 
             // Prepare response data with image_url
             $responseData = $categories->map(function ($category) {

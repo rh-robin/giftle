@@ -20,9 +20,7 @@ class GiftingController extends Controller
     {
         try {
             $gifitingList = Gifting::latest()->select(['id', 'name', 'description', 'image', 'slug', 'status', 'created_at', 'updated_at'])->cursor();
-            if (empty($gifitingList)) {
-                return $this->sendError('gifiting List Not Found');
-            }
+
             return $this->sendResponse($gifitingList, 'Gifiting List');
         } catch (Exception $e) {
             Log::error($e->getMessage());

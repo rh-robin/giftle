@@ -21,9 +21,7 @@ class ServiceController extends Controller
     {
         try {
             $serviceList = Service::latest()->select(['id', 'name', 'description', 'image', 'slug'])->cursor();
-            if (empty($serviceList)) {
-                return $this->sendError('Service List Not Found');
-            }
+
             return $this->sendResponse($serviceList, 'Service List');
         } catch (Exception $e) {
             Log::error($e->getMessage());

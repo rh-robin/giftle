@@ -29,9 +29,7 @@ class ProductController extends Controller
                 ->with(['images:id,product_id,image', 'priceRanges:id,product_id,min_quantity,max_quantity,price'])
                 ->get();
 
-            if ($products->isEmpty()) {
-                return $this->sendError('No products found', 200);
-            }
+
 
             // Prepare response data with thumbnail_url and image_url
             $responseData = $products->map(function ($product) {
