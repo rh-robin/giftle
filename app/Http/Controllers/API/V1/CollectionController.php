@@ -23,7 +23,6 @@ class CollectionController extends Controller
     {
         try {
             $collections = Collection::latest()
-                ->select(['id', 'title', 'sub_title'])
                 ->get();
 
 
