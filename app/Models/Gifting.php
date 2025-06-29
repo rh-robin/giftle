@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Gifting extends Model
 {
+    protected $table = 'giftings';
     protected $fillable = ['name', 'image', 'description', 'slug', 'status'];
     public function products()
     {

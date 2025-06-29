@@ -35,4 +35,21 @@ class CategoryApiController extends Controller
             return $this->sendError('Something went wrong', 500);
         }
     }
+
+
+    public function categoryForDropdown()
+    {
+        try {
+            $categories = Category::where('status', 'active')
+                ->select(['id', 'name', 'slug'])
+                ->latest()
+                ->get();
+
+
+            return $this->sendResponse($categories->toArray(), 'Category dropdown list retrieved successfully');
+        } catch (\Exception $e) {
+            \Log::error('Failed to retrieve category dropdown list: ' . $e->getMessage());
+            return $this->sendError('Something went wrong', 500);
+        }
+    }
 }

@@ -120,7 +120,8 @@ Route::prefix('v1/')->group(function () {
     //gifting route
     Route::get('gifting', [GiftingApiController::class, 'index']);
     Route::get('gifting/{id}', [GiftingApiController::class, 'serviceShow']);
-    //gifting
+    Route::get('gifting/dropdown/list', [GiftingApiController::class, 'giftingForDropdown']);
+    //gift box
     Route::get('gift-box', [GiftBoxApiController::class, 'index']);
     //Collection route
     Route::get('collections', [CollectionApiController::class, 'getCollectionsDropdown']);
@@ -128,6 +129,7 @@ Route::prefix('v1/')->group(function () {
 
     //Collection route
     Route::get('categories', [CategoryApiController::class, 'index']);
+    Route::get('categories/dropdown/list', [CategoryApiController::class, 'categoryForDropdown']);
 
     //product route
     Route::get('products', [ProductApiController::class, 'index']);
