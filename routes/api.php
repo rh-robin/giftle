@@ -3,6 +3,7 @@
 use App\Http\Controllers\API\V1\CategoryController;
 use App\Http\Controllers\API\V1\ConversionRateController;
 use App\Http\Controllers\API\V1\Frontend\CategoryApiController;
+use App\Http\Controllers\API\V1\Frontend\CurrencyApiController;
 use App\Http\Controllers\API\V1\Frontend\OrderApiController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Auth\LoginController;
@@ -135,5 +136,8 @@ Route::prefix('v1/')->group(function () {
     Route::get('products', [ProductApiController::class, 'index']);
     //create Order
     Route::post('create-order', [OrderApiController::class, 'store']);
+
+    // Currency route
+    Route::get('get-currency', [CurrencyApiController::class, 'getCurrency']);
 
 });
