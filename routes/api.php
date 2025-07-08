@@ -5,6 +5,7 @@ use App\Http\Controllers\API\V1\ConversionRateController;
 use App\Http\Controllers\API\V1\Frontend\CategoryApiController;
 use App\Http\Controllers\API\V1\Frontend\CurrencyApiController;
 use App\Http\Controllers\API\V1\Frontend\OrderApiController;
+use App\Http\Controllers\API\V1\OrderController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Auth\LoginController;
 use App\Http\Controllers\API\V1\GiftBoxController;
@@ -13,9 +14,7 @@ use App\Http\Controllers\API\V1\ProductController;
 use App\Http\Controllers\API\V1\ServiceController;
 use App\Http\Controllers\API\Auth\LogoutController;
 use App\Http\Controllers\API\Auth\RegisterController;
-use App\Http\Controllers\API\V1\CataloguesController;
 use App\Http\Controllers\API\V1\CollectionController;
-use App\Http\Controllers\API\V1\CreateOrderApiController;
 use App\Http\Controllers\API\V1\ServiceDetailsController;
 use App\Http\Controllers\API\Auth\ResetPasswordController;
 use App\Http\Controllers\API\V1\Frontend\GiftBoxApiController;
@@ -106,6 +105,11 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     //conversion rate controller
     Route::controller(ConversionRateController::class)->prefix('v1/conversion-rate')->group(function () {
         Route::post('/store', 'conversionRateStore');
+    });
+
+    Route::controller(OrderController::class)->prefix('v1/order')->group(function () {
+        Route::get('/pending', 'pendingOrders'); // New pending orders route
+        Route::get('/{id}', 'viewOrder'); // view order
     });
 });
 
