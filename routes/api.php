@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\API\V1\CampaignController;
 use App\Http\Controllers\API\V1\CategoryController;
 use App\Http\Controllers\API\V1\ConversionRateController;
+use App\Http\Controllers\API\V1\Frontend\CampaignApiController;
 use App\Http\Controllers\API\V1\Frontend\CategoryApiController;
 use App\Http\Controllers\API\V1\Frontend\CurrencyApiController;
 use App\Http\Controllers\API\V1\Frontend\OrderApiController;
@@ -111,6 +113,13 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
         Route::get('/pending', 'pendingOrders'); // New pending orders route
         Route::get('/{id}', 'viewOrder'); // view order
     });
+
+
+    // Campaign route
+    Route::controller(CampaignController::class)->prefix('v1/campaign')->group(function () {
+        Route::get('/pending', 'pendingCampaigns');
+        Route::get('/{id}', 'viewCampaign');
+    });
 });
 
 
@@ -138,8 +147,15 @@ Route::prefix('v1/')->group(function () {
 
     //product route
     Route::get('products', [ProductApiController::class, 'index']);
-    //create Order
+
+    //orders
     Route::post('create-order', [OrderApiController::class, 'store']);
+    Route::get('pending-order', [OrderApiController::class, 'pendingOrders']);
+    Route::get('order/{id}', [OrderApiController::class, 'viewOrder']);
+
+    //campaigns
+    Route::get('pending-campaign', [CampaignApiController::class, 'pendingCampaigns']);
+    Route::get('campaign/{id}', [CampaignApiController::class, 'viewCampaign']);
 
     // Currency route
     Route::get('get-currency', [CurrencyApiController::class, 'getCurrency']);

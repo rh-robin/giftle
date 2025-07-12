@@ -9,13 +9,15 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-class OrderController extends Controller
+class CampaignController extends Controller
 {
-    use ResponseTrait;
-    public function pendingOrders()
+    Use ResponseTrait;
+    /*============ pending orders ============*/
+    public function pendingCampaigns()
     {
         try {
             $orders = Order::where('status', 'pending')
+                ->whereNot('campaign_type', null)
                 ->select([
                     'id',
                     'status',
@@ -28,7 +30,7 @@ class OrderController extends Controller
                 ->get();
 
             if ($orders->isEmpty()) {
-                return $this->sendError('No pending orders found', 'No orders available', 200);
+                return $this->sendError('No pending campaigns found', 'No campaigns available', 200);
             }
 
             // Prepare response data with formatted price and due_date
@@ -42,16 +44,15 @@ class OrderController extends Controller
                 ];
             })->toArray();
 
-            return $this->sendResponse($responseData, 'Pending orders retrieved successfully');
+            return $this->sendResponse($responseData, 'Pending campaigns retrieved successfully');
         } catch (Exception $e) {
-            Log::error('Failed to retrieve pending orders: ' . $e->getMessage());
+            Log::error('Failed to retrieve pending campaigns: ' . $e->getMessage());
             return $this->sendError($e->getMessage(), 'Something went wrong', 500);
         }
     }
 
 
-    /*============ single order details ==============*/
-    public function viewOrder($id)
+    public function viewCampaign($id)
     {
         try {
             $order = Order::where('id', $id)
@@ -64,7 +65,7 @@ class OrderController extends Controller
                 ->first();
 
             if (!$order) {
-                return $this->sendError('Order not found or not pending', 'Invalid order ID', 404);
+                return $this->sendError('Campaign not found or not accessible', 'Invalid campaign ID', 404);
             }
 
             // Prepare response data with formatted price and due_date
@@ -73,9 +74,9 @@ class OrderController extends Controller
             $responseData['quantity'] = $order->number_of_boxes;
             $responseData['due_date'] = \Carbon\Carbon::parse($order->created_at)->addDays(14)->format('Y-m-d');
 
-            return $this->sendResponse($responseData, 'Order details retrieved successfully');
+            return $this->sendResponse($responseData, 'Campaign details retrieved successfully');
         } catch (Exception $e) {
-            Log::error('Failed to retrieve order details for ID ' . $id . ': ' . $e->getMessage());
+            Log::error('Failed to retrieve campaign details for ID ' . $id . ': ' . $e->getMessage());
             return $this->sendError($e->getMessage(), 'Something went wrong', 500);
         }
     }
