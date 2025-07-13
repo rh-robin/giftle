@@ -114,7 +114,7 @@ class CollectionController extends Controller
             $collection = Collection::find($id);
             if (!$collection) {
                 DB::rollBack();
-                return $this->sendError('Collection not found', 404);
+                return $this->sendResponse([], 'Collection not found');
             }
 
             $slug = $request->slug ?? Str::slug($request->title);

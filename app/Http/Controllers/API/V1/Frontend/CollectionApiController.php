@@ -19,7 +19,7 @@ class CollectionApiController extends Controller
                 ->get();
 
             if ($collections->isEmpty()) {
-                return $this->sendError('No collections found', 404);
+                return $this->sendResponse([], 'No collections found');
             }
 
             return $this->sendResponse($collections, 'Collection list retrieved successfully');

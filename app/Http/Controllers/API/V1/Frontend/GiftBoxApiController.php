@@ -15,7 +15,7 @@ class GiftBoxApiController extends Controller
         $giftBoxes = GiftBox::latest()->get();
 
         if ($giftBoxes->isEmpty()) {
-            return $this->sendError('No Gift Boxes found', 404);
+            return $this->sendResponse([], 'No Gift Boxes found');
         }
 
         $giftBoxes->each(function ($giftBox) {

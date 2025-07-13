@@ -18,7 +18,7 @@ class CategoryApiController extends Controller
                 ->get();
 
             if ($categories->isEmpty()) {
-                return $this->sendError('No categories found', 404);
+                return $this->sendResponse([], 'No categories found');
             }
 
             // Prepare response data with image_url
