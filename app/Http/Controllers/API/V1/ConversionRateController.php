@@ -40,6 +40,7 @@ class ConversionRateController extends Controller
             // Prepare data for storage
             $storedRates = [];
             foreach ($conversionRates as $currency => $rate) {
+                // Store the exact rate as provided by the API
                 $conversionRate = ConversionRate::create([
                     'currency' => $currency,
                     'conversion_rate' => $rate,
@@ -59,4 +60,5 @@ class ConversionRateController extends Controller
             return $this->sendError($e->getMessage(), 'Something went wrong', 500);
         }
     }
+
 }

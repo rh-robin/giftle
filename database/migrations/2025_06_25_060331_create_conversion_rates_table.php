@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('conversion_rates', function (Blueprint $table) {
             $table->id();
             $table->string('currency')->unique();
-            $table->float('conversion_rate');
+            $table->decimal('conversion_rate', 20, 10)->default(0.00);
             $table->timestamps();
         });
     }
