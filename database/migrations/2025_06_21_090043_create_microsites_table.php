@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('order_id');
             $table->unsignedBigInteger('order_item_id');
-            $table->enum('ask_size', ['yes', 'no']);
-            $table->enum('input_type', ['plain_text', 'options']);
-            $table->json('options');
+            $table->enum('ask_size', ['yes', 'no'])->default('no');
+            $table->enum('input_type', ['plain_text', 'options'])->nullable();
+            $table->json('options')->nullable();
             $table->timestamps();
         });
     }

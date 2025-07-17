@@ -133,7 +133,7 @@ Route::prefix('v1/')->group(function () {
 
     //gifting route
     Route::get('gifting', [GiftingApiController::class, 'index']);
-    Route::get('gifting/{id}', [GiftingApiController::class, 'serviceShow']);
+    Route::get('gifting/{id}', [GiftingApiController::class, 'giftingShow']);
     Route::get('gifting/dropdown/list', [GiftingApiController::class, 'giftingForDropdown']);
     //gift box
     Route::get('gift-box', [GiftBoxApiController::class, 'index']);

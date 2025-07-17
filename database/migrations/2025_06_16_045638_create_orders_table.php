@@ -25,7 +25,7 @@ return new class extends Migration
             $table->enum('status', ['pending', 'action', 'completed', 'cancelled', 'processing'])->default('pending');
             $table->enum('campaign_type', ['microsite', 'gift_redemption'])->nullable();
             $table->string('campaign_name')->nullable();
-            $table->integer('gift_redeem_quantity')->default(0);
+            $table->integer('gift_redeem_quantity')->nullable();
             $table->boolean('multiple_delivery_address')->default(false);
             $table->string('slug')->unique();
             $table->decimal('price_usd', 10, 2);

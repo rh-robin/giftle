@@ -16,13 +16,29 @@ class GiftingApiController extends Controller
         return $this->sendResponse($giftings, 'Giftings fetched successfully');
     }
     //servivice details fetch
-    public function serviceShow($id)
+    public function giftingShow($id)
     {
-        $giftings = Gifting::with(['products.images', 'products.priceRange', 'products.catalouge'])
+        $gifting = Gifting::with(['products' => function ($query) {
+            $query->select([
+                'id',
+                'gifting_id',
+                'category_id',
+                'name',
+                'description',
+                'thumbnail',
+                'quantity',
+                'minimum_order_quantity',
+                'estimated_delivery_time',
+                'product_type',
+                'slug',
+                'sku',
+                'status'
+            ])->with(['category', 'images', 'priceRanges']);
+        }])
             ->where('id', $id)
             ->firstOrFail();
 
-        return $this->sendResponse($giftings, 'Gifting Details fetched successfully');
+        return $this->sendResponse($gifting, 'Gifting Details with Products fetched successfully');
     }
 
     public function giftingForDropdown()
