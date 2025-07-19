@@ -56,7 +56,14 @@ class OrderController extends Controller
         try {
             $order = Order::where('id', $id)
                 ->with([
-                    'orderItems.product:id,name,thumbnail,slug',
+                    'orderItems.product' => function ($query) {
+                        $query->select([
+                            'id',
+                            'name',
+                            'thumbnail',
+                            'slug'
+                        ]);
+                    },
                     'giftBox:id,name,giftle_branded_price,custom_branding_price,plain_price',
                     'deliveryAddresses:id,order_id,recipient_name,email,phone,address_line_1,address_line_2,address_line_3,postal_code,post_town',
                     'billingAddresses:id,order_id,biller_name,email,phone,address_line_1,address_line_2,address_line_3,postal_code,post_town'
@@ -67,11 +74,17 @@ class OrderController extends Controller
                 return $this->sendError('Order not found or not pending', 'Invalid order ID', 404);
             }
 
-            // Prepare response data with formatted price and due_date
+            // Prepare response data with formatted price, due_date, and thumbnail_url
             $responseData = $order->toArray();
             $responseData['price'] = number_format($order->price_in_currency, 2) . ' ' . $order->user_currency;
             $responseData['quantity'] = $order->number_of_boxes;
             $responseData['due_date'] = \Carbon\Carbon::parse($order->created_at)->addDays(14)->format('Y-m-d');
+
+            // Add thumbnail_url to each product in order_items
+            $responseData['order_items'] = collect($responseData['order_items'])->map(function ($item) {
+                $item['product']['thumbnail_url'] = $item['product']['thumbnail'] ? asset($item['product']['thumbnail']) : null;
+                return $item;
+            })->toArray();
 
             return $this->sendResponse($responseData, 'Order details retrieved successfully');
         } catch (Exception $e) {

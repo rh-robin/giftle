@@ -32,6 +32,8 @@ return new class extends Migration
             $table->string('user_currency')->nullable();
             $table->decimal('exchange_rate', 10, 2)->nullable();
             $table->decimal('price_in_currency', 10, 2)->nullable();
+            $table->decimal('gift_box_price_usd', 8, 2)->default(0);
+            $table->decimal('gift_box_price_user_currency', 8, 2)->default(0);
             $table->enum('payment_status', ['pending', 'completed', 'cancelled', 'hold'])->default('pending')->nullable();
             $table->timestamps();
 
