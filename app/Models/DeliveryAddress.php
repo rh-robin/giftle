@@ -25,4 +25,8 @@ class DeliveryAddress extends Model
     {
         return $this->belongsTo(Order::class, 'order_id');
     }
+    public function micrositeItemSizes()
+    {
+        return $this->hasMany(MicrositeItemSize::class, 'delivery_address_id');
+    }
 }

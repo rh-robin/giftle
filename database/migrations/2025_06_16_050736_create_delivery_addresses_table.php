@@ -14,14 +14,14 @@ return new class extends Migration
         Schema::create('delivery_addresses', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('order_id');
-            $table->string('recipient_name');
-            $table->string('email');
-            $table->string('phone');
-            $table->string('address_line_1');
+            $table->string('recipient_name')->nullable();
+            $table->string('email')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('address_line_1')->nullable();
             $table->string('address_line_2')->nullable();
             $table->string('address_line_3')->nullable();
-            $table->string('postal_code');
-            $table->string('post_town');
+            $table->string('postal_code')->nullable();
+            $table->string('post_town')->nullable();
             $table->timestamps();
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
         });

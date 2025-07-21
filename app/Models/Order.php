@@ -66,4 +66,9 @@ class Order extends Model
     {
         return $this->hasMany(BillingAddress::class, 'order_id');
     }
+
+    public function microsites()
+    {
+        return $this->hasMany(Microsite::class, 'order_id');
+    }
 }

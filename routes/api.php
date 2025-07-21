@@ -6,6 +6,7 @@ use App\Http\Controllers\API\V1\ConversionRateController;
 use App\Http\Controllers\API\V1\Frontend\CampaignApiController;
 use App\Http\Controllers\API\V1\Frontend\CategoryApiController;
 use App\Http\Controllers\API\V1\Frontend\CurrencyApiController;
+use App\Http\Controllers\API\V1\Frontend\MicrositeApiController;
 use App\Http\Controllers\API\V1\Frontend\OrderApiController;
 use App\Http\Controllers\API\V1\OrderController;
 use Illuminate\Support\Facades\Route;
@@ -156,6 +157,12 @@ Route::prefix('v1/')->group(function () {
     //campaigns
     Route::get('pending-campaign', [CampaignApiController::class, 'pendingCampaigns']);
     Route::get('campaign/{id}', [CampaignApiController::class, 'viewCampaign']);
+    Route::post('campaign/name', [CampaignApiController::class, 'updateCampaignName']);
+    //microsite
+    Route::post('campaign/microsite-setup/{id}', [MicrositeApiController::class, 'micrositeSetup']);
+    Route::get('campaign/microsite/{slug}/recipient-data', [MicrositeApiController::class, 'recipientPage']);
+    Route::post('campaign/microsite/{slug}/recipient-data', [MicrositeApiController::class, 'storeRecipientData']);
+    Route::get('campaign/microsite/{orderId}/responses', [MicrositeApiController::class, 'viewRecipientResponses']);
 
     // Currency route
     Route::get('get-currency', [CurrencyApiController::class, 'getCurrency']);
