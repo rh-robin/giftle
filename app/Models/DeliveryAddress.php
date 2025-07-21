@@ -29,4 +29,9 @@ class DeliveryAddress extends Model
     {
         return $this->hasMany(MicrositeItemSize::class, 'delivery_address_id');
     }
+
+    public function giftRedemptions()
+    {
+        return $this->hasMany(GiftRedemption::class, 'delivery_address_id');
+    }
 }

@@ -44,7 +44,7 @@ Route::group(['middleware' => 'auth:sanctum'], static function () {
 
 
 
-Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
+Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function () {
     //Service group controller
     Route::controller(ServiceController::class)->prefix('v1/service')->group(function () {
         Route::get('/list', 'serviceList');
@@ -149,6 +149,17 @@ Route::prefix('v1/')->group(function () {
     //product route
     Route::get('products', [ProductApiController::class, 'index']);
 
+    //microsite
+    Route::get('campaign/microsite/{slug}/recipient-data', [MicrositeApiController::class, 'recipientPage']);
+    Route::post('campaign/microsite/{slug}/recipient-data', [MicrositeApiController::class, 'storeRecipientData']);
+
+    // Currency route
+    Route::get('get-currency', [CurrencyApiController::class, 'getCurrency']);
+
+});
+
+
+Route::prefix('v1/')->middleware('auth:sanctum')->group(function () {
     //orders
     Route::post('create-order', [OrderApiController::class, 'store']);
     Route::get('pending-order', [OrderApiController::class, 'pendingOrders']);
@@ -158,13 +169,8 @@ Route::prefix('v1/')->group(function () {
     Route::get('pending-campaign', [CampaignApiController::class, 'pendingCampaigns']);
     Route::get('campaign/{id}', [CampaignApiController::class, 'viewCampaign']);
     Route::post('campaign/name', [CampaignApiController::class, 'updateCampaignName']);
+
     //microsite
     Route::post('campaign/microsite-setup/{id}', [MicrositeApiController::class, 'micrositeSetup']);
-    Route::get('campaign/microsite/{slug}/recipient-data', [MicrositeApiController::class, 'recipientPage']);
-    Route::post('campaign/microsite/{slug}/recipient-data', [MicrositeApiController::class, 'storeRecipientData']);
     Route::get('campaign/microsite/{orderId}/responses', [MicrositeApiController::class, 'viewRecipientResponses']);
-
-    // Currency route
-    Route::get('get-currency', [CurrencyApiController::class, 'getCurrency']);
-
 });

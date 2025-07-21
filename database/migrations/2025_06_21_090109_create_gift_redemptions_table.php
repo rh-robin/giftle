@@ -14,9 +14,12 @@ return new class extends Migration
         Schema::create('gift_redemptions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('order_id');
-            $table->unsignedBigInteger('dilivery_address_id');
+            $table->unsignedBigInteger('delivery_address_id')->nullable();
             $table->json('selected_items');
             $table->timestamps();
+
+            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
+            $table->foreign('delivery_address_id')->references('id')->on('delivery_addresses')->onDelete('set null');
         });
     }
 

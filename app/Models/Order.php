@@ -71,4 +71,10 @@ class Order extends Model
     {
         return $this->hasMany(Microsite::class, 'order_id');
     }
+
+
+    public function giftRedemptions()
+    {
+        return $this->hasMany(GiftRedemption::class);
+    }
 }

@@ -8,7 +8,7 @@ class GiftRedemption extends Model
 {
     protected $fillable = [
         'order_id',
-        'dilivery_address_id',
+        'delivery_address_id',
         'selected_items'
     ];
 
@@ -18,7 +18,6 @@ class GiftRedemption extends Model
 
     protected $table = 'gift_redemptions';
 
-
     public function order()
     {
         return $this->belongsTo(Order::class);
@@ -26,6 +25,6 @@ class GiftRedemption extends Model
 
     public function deliveryAddress()
     {
-        return $this->belongsTo(DeliveryAddress::class, 'dilivery_address_id');
+        return $this->belongsTo(DeliveryAddress::class, 'delivery_address_id');
     }
 }
