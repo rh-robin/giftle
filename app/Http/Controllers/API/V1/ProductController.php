@@ -112,6 +112,8 @@ class ProductController extends Controller
                 }
             }
 
+            //dd($request->price_ranges);
+
             // Handle price ranges
             if ($request->price_ranges) {
                 foreach ($request->price_ranges as $range) {

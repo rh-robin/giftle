@@ -6,6 +6,7 @@ use App\Http\Controllers\API\V1\ConversionRateController;
 use App\Http\Controllers\API\V1\Frontend\CampaignApiController;
 use App\Http\Controllers\API\V1\Frontend\CategoryApiController;
 use App\Http\Controllers\API\V1\Frontend\CurrencyApiController;
+use App\Http\Controllers\API\V1\Frontend\GiftRedemptionApiController;
 use App\Http\Controllers\API\V1\Frontend\MicrositeApiController;
 use App\Http\Controllers\API\V1\Frontend\OrderApiController;
 use App\Http\Controllers\API\V1\OrderController;
@@ -153,6 +154,10 @@ Route::prefix('v1/')->group(function () {
     Route::get('campaign/microsite/{slug}/recipient-data', [MicrositeApiController::class, 'recipientPage']);
     Route::post('campaign/microsite/{slug}/recipient-data', [MicrositeApiController::class, 'storeRecipientData']);
 
+    //gift-redemption
+    Route::get('campaign/gift-redemption/{slug}/recipient-data', [MicrositeApiController::class, 'recipientPage']);
+    Route::post('campaign/gift-redemption/{slug}/recipient-data', [MicrositeApiController::class, 'storeRecipientData']);
+
     // Currency route
     Route::get('get-currency', [CurrencyApiController::class, 'getCurrency']);
 
@@ -173,4 +178,8 @@ Route::prefix('v1/')->middleware('auth:sanctum')->group(function () {
     //microsite
     Route::post('campaign/microsite-setup/{id}', [MicrositeApiController::class, 'micrositeSetup']);
     Route::get('campaign/microsite/{orderId}/responses', [MicrositeApiController::class, 'viewRecipientResponses']);
+
+    //gift-redemption
+    Route::post('campaign/gift-redemption/{id}', [GiftRedemptionApiController::class, 'setGiftRedeemQuantity']);
+    Route::get('campaign/gift-redemption/{orderId}/responses', [GiftRedemptionApiController::class, 'viewRecipientResponses']);
 });

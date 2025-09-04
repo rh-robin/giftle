@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\V1;
 
+use App\Models\Product;
+use App\Models\ProductPriceRange;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -35,7 +37,27 @@ class OrderRequest extends FormRequest
             'user_currency' => ['nullable', 'string', 'max:3', 'exists:conversion_rates,currency'],
             'products' => ['required', 'array', 'min:1'],
             'products.*.product_id' => ['required', 'exists:products,id'],
-            'products.*.quantity' => ['nullable', 'integer', 'min:1'],
+            'products.*.quantity' => [
+                'nullable',
+                'integer',
+                'min:1',
+                function ($attribute, $value, $fail) {
+                    $index = explode('.', $attribute)[1];
+                    $productId = $this->input("products.{$index}.product_id");
+                    $numberOfBoxes = $this->input('number_of_boxes', 1); // Default to 1 if not set
+                    $quantity = $value ?? $numberOfBoxes; // Use number_of_boxes as default if quantity is null
+                    $product = Product::find($productId);
+                    if (!$product) {
+                        $fail("Product ID {$productId} not found");
+                    } elseif ($quantity > $product->quantity) {
+                        $fail("Quantity {$quantity} exceeds available stock {$product->quantity} for product ID {$productId}");
+                    }
+                    $minQuantity = ProductPriceRange::where('product_id', $productId)->min('min_quantity');
+                    if ($minQuantity !== null && $quantity < $minQuantity) {
+                        $fail("Quantity {$quantity} is less than the minimum required quantity {$minQuantity} for product ID {$productId}");
+                    }
+                },
+            ],
             'billing_address' => ['nullable', 'array'],
             'billing_address.biller_name' => ['required_if:billing_address,array', 'string', 'max:255'],
             'billing_address.email' => ['required_if:billing_address,array', 'email', 'max:255'],
@@ -63,6 +85,7 @@ class OrderRequest extends FormRequest
             'user_currency.exists' => 'The selected user currency is not supported.',
             'gift_box_id.exists' => 'The selected gift box does not exist.',
             'products.*.product_id.exists' => 'One or more product IDs are invalid.',
+            'products.*.quantity.required' => 'Quantity is required for each product.',
             'delivery_address.required_if' => 'Delivery address is required when multiple delivery addresses are not enabled.',
         ];
     }

@@ -51,9 +51,16 @@ class ProductRequest extends FormRequest
                 Rule::requiredIf(function () {
                     return $this->has('price_ranges') && !$this->input('price_ranges.*.delete');
                 }),
+                'nullable',
                 'integer',
                 'min:1',
-                Rule::when($this->has('price_ranges.*.min_quantity'), ['gte:price_ranges.*.min_quantity']),
+                function ($attribute, $value, $fail) {
+                    $index = explode('.', $attribute)[1];
+                    $minQuantity = $this->input("price_ranges.{$index}.min_quantity");
+                    if ($value !== null && $minQuantity !== null && $value < $minQuantity) {
+                        $fail("Max quantity must be greater than or equal to min quantity for range {$index}.");
+                    }
+                },
             ],
             'price_ranges.*.price' => [
                 Rule::requiredIf(function () {
@@ -70,7 +77,9 @@ class ProductRequest extends FormRequest
     {
         return [
             'name.unique' => 'The product name already exists.',
-            'price_ranges.*.max_quantity.gte' => 'The maximum quantity must be greater than or equal to the minimum quantity.',
+            'price_ranges.*.min_quantity.required' => 'Minimum quantity is required for each price range.',
+            'price_ranges.*.price.required' => 'Price is required for each price range.',
+            'price_ranges.*.max_quantity.min' => 'Max quantity must be at least 1.',
         ];
     }
 }

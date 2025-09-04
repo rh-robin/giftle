@@ -10,10 +10,13 @@ use App\Models\DeliveryAddress;
 use App\Models\GiftBox;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
 use App\Models\ProductPriceRange;
 use App\Traits\ResponseTrait;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -21,24 +24,33 @@ use Illuminate\Support\Str;
 class OrderApiController extends Controller
 {
     use ResponseTrait;
+
     public function store(OrderRequest $request)
     {
         try {
             DB::beginTransaction();
 
-            // Calculate total price_usd
-            $priceUsd = 0;
+            // Get authenticated user ID
+            $user = auth()->user();
+            if (!$user) {
+                return $this->sendError('Unauthenticated', 'Please provide a valid token', Response::HTTP_UNAUTHORIZED);
+            }
+
+            // Calculate total price_gbp
+            $priceGbp = 0;
             $numberOfBoxes = $request->input('number_of_boxes', 1);
-            $userCurrency = $request->user_currency ?? 'USD';
+            $userCurrency = $request->user_currency ?? 'GBP';
 
             // Initialize conversion rate
-            $conversionRate = 1; // Default to 1 for USD
-            if ($userCurrency !== 'USD') {
+            $conversionRate = 1.0; // Default to 1.0 for GBP
+            if ($userCurrency !== 'GBP') {
+                $gbpRate = ConversionRate::where('currency', 'GBP')->first()->conversion_rate ?? 1.0; // GBP rate relative to USD
                 $conversion = ConversionRate::where('currency', $userCurrency)->first();
                 if (!$conversion) {
                     throw new Exception("Conversion rate not found for currency {$userCurrency}");
                 }
-                $conversionRate = $conversion->conversion_rate;
+                // Convert GBP to USD (1 / GBP_rate) then to target currency (target_rate)
+                $conversionRate = (1 / $gbpRate) * $conversion->conversion_rate;
             }
 
             // Get product prices and prepare order items data
@@ -47,32 +59,50 @@ class OrderApiController extends Controller
 
             foreach ($products as $product) {
                 $quantity = $product['quantity'] ?? $numberOfBoxes;
+
+                // Validate product exists and has sufficient stock
+                $productModel = Product::find($product['product_id']);
+                if (!$productModel) {
+                    throw new Exception("Product ID {$product['product_id']} not found");
+                }
+                if ($quantity > $productModel->quantity) {
+                    throw new Exception("Order quantity {$quantity} exceeds available stock {$productModel->quantity} for product ID {$product['product_id']}");
+                }
+
+                // Get lowest min_quantity to validate
+                $lowestMinQuantity = ProductPriceRange::where('product_id', $product['product_id'])
+                    ->min('min_quantity');
+                if ($lowestMinQuantity === null || $quantity < $lowestMinQuantity) {
+                    throw new Exception("Order quantity {$quantity} is less than the minimum required quantity {$lowestMinQuantity} for product ID {$product['product_id']}");
+                }
+
+                // Get price range with highest min_quantity <= order quantity
                 $priceRange = ProductPriceRange::where('product_id', $product['product_id'])
                     ->where('min_quantity', '<=', $quantity)
-                    ->where('max_quantity', '>=', $quantity)
+                    ->orderBy('min_quantity', 'desc')
                     ->first();
 
                 if (!$priceRange) {
                     throw new Exception("No price range found for product ID {$product['product_id']} with quantity {$quantity}");
                 }
 
-                $productPriceUsd = $priceRange->price * $quantity;
-                $priceUsd += $productPriceUsd;
+                $productPriceGbp = $priceRange->price * $quantity;
+                $priceGbp += $productPriceGbp;
 
-                $productPriceInCurrency = $userCurrency === 'USD'
+                $productPriceInCurrency = $userCurrency === 'GBP'
                     ? $priceRange->price
                     : round($priceRange->price * $conversionRate, 2);
 
                 $orderItemsData[] = [
                     'product_id' => $product['product_id'],
                     'quantity' => $quantity,
-                    'product_price_usd' => $priceRange->price,
+                    'product_price_gbp' => $priceRange->price,
                     'product_price_user_currency' => $productPriceInCurrency
                 ];
             }
 
             // Get gift box price
-            $giftBoxPriceUsd = 0;
+            $giftBoxPriceGbp = 0;
             $giftBoxPriceInCurrency = 0;
             if ($request->gift_box_id && $request->gift_box_type) {
                 $giftBox = GiftBox::findOrFail($request->gift_box_id);
@@ -82,17 +112,17 @@ class OrderApiController extends Controller
                     'plain' => 'plain_price',
                     default => throw new Exception('Invalid gift box type'),
                 };
-                $giftBoxPriceUsd = $giftBox->$priceField;
-                $priceUsd += $giftBoxPriceUsd;
-                $giftBoxPriceInCurrency = $userCurrency === 'USD'
-                    ? $giftBoxPriceUsd
-                    : round($giftBoxPriceUsd * $conversionRate, 2);
+                $giftBoxPriceGbp = $giftBox->$priceField;
+                $priceGbp += $giftBoxPriceGbp;
+                $giftBoxPriceInCurrency = $userCurrency === 'GBP'
+                    ? $giftBoxPriceGbp
+                    : round($giftBoxPriceGbp * $conversionRate, 2);
             }
 
             // Calculate total price in user currency
-            $priceInCurrency = $userCurrency === 'USD'
-                ? $priceUsd
-                : round($priceUsd * $conversionRate, 2);
+            $priceInCurrency = $userCurrency === 'GBP'
+                ? $priceGbp
+                : round($priceGbp * $conversionRate, 2);
 
             // Generate unique slug
             $slug = Str::random(8);
@@ -103,7 +133,6 @@ class OrderApiController extends Controller
 
             // Create order
             $orderData = $request->only([
-                'user_id',
                 'name',
                 'email',
                 'phone',
@@ -117,12 +146,13 @@ class OrderApiController extends Controller
                 'gift_redeem_quantity',
                 'multiple_delivery_address',
             ]);
+            $orderData['user_id'] = $user->id;
             $orderData['slug'] = $slug;
-            $orderData['price_usd'] = $priceUsd;
+            $orderData['price_gbp'] = $priceGbp;
             $orderData['user_currency'] = $userCurrency;
             $orderData['exchange_rate'] = $conversionRate;
             $orderData['price_in_currency'] = $priceInCurrency;
-            $orderData['gift_box_price_usd'] = $giftBoxPriceUsd;
+            $orderData['gift_box_price_gbp'] = $giftBoxPriceGbp;
             $orderData['gift_box_price_user_currency'] = $giftBoxPriceInCurrency;
 
             $order = Order::create($orderData);
@@ -134,7 +164,7 @@ class OrderApiController extends Controller
                     'order_id' => $order->id,
                     'product_id' => $itemData['product_id'],
                     'quantity' => $itemData['quantity'],
-                    'product_price_usd' => $itemData['product_price_usd'],
+                    'product_price_gbp' => $itemData['product_price_gbp'],
                     'product_price_user_currency' => $itemData['product_price_user_currency']
                 ]);
             }
@@ -166,8 +196,6 @@ class OrderApiController extends Controller
             return $this->sendError($e->getMessage(), 'Something went wrong', 500);
         }
     }
-
-
 
     /*============ pending orders ============*/
     public function pendingOrders()
@@ -208,9 +236,6 @@ class OrderApiController extends Controller
         }
     }
 
-
-
-
     public function viewOrder($id)
     {
         try {
@@ -233,7 +258,7 @@ class OrderApiController extends Controller
                     'gift_redeem_quantity',
                     'multiple_delivery_address',
                     'slug',
-                    'price_usd',
+                    'price_gbp',
                     'user_currency',
                     'exchange_rate',
                     'price_in_currency',
@@ -263,7 +288,7 @@ class OrderApiController extends Controller
             $responseData = $order->toArray();
             $responseData['price'] = number_format($order->price_in_currency, 2) . ' ' . $order->user_currency;
             $responseData['quantity'] = $order->number_of_boxes;
-            $responseData['due_date'] = \Carbon\Carbon::parse($order->created_at)->addDays(14)->format('Y-m-d');
+            $responseData['due_date'] = Carbon::parse($order->created_at)->addDays(14)->format('Y-m-d');
 
             // Add thumbnail_url to each product in order_items
             $responseData['order_items'] = collect($responseData['order_items'])->map(function ($item) {

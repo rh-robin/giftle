@@ -24,10 +24,13 @@ class Order extends Model
         'gift_redeem_quantity',
         'multiple_delivery_address',
         'slug',
-        'price_usd',
+        'price_gbp',
         'user_currency',
         'exchange_rate',
         'price_in_currency',
+        'gift_box_price_gbp',
+        'gift_box_price_user_currency',
+        'payment_status',
     ];
 
     protected $casts = [
@@ -36,7 +39,7 @@ class Order extends Model
         'gift_box_type' => 'string',
         'status' => 'string',
         'campaign_type' => 'string',
-        'price_usd' => 'decimal:2',
+        'price_gbp' => 'decimal:2',
         'exchange_rate' => 'decimal:2',
         'price_in_currency' => 'decimal:2',
     ];

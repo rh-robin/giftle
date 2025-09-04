@@ -12,18 +12,14 @@ class OrderItem extends Model
         'order_id',
         'product_id',
         'quantity',
-        'product_price_usd',
+        'product_price_gbp',
         'product_price_user_currency',
-        'gift_box_price_usd',
-        'gift_box_price_user_currency',
     ];
 
     protected $casts = [
         'quantity' => 'integer',
-        'product_price_usd' => 'decimal:2',
+        'product_price_gbp' => 'decimal:2',
         'product_price_user_currency' => 'decimal:2',
-        'gift_box_price_usd' => 'decimal:2',
-        'gift_box_price_user_currency' => 'decimal:2',
     ];
 
     // Relationships

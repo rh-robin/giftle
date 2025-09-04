@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API\V1\Frontend;
 
 use App\Models\Category;
+use App\Models\ConversionRate;
 use App\Models\Product;
 use App\Traits\ResponseTrait;
 use App\Http\Controllers\Controller;
@@ -51,14 +52,31 @@ class ProductApiController extends Controller
                 $query->where('category_id', $category_id);
             }
 
+            // Get number_of_boxes filter
+            $numberOfBoxes = $request->query('number_of_boxes');
+            $numberOfBoxes = $numberOfBoxes ? (int)$numberOfBoxes : null;
+
+            // Get currency filter and default to GBP
+            $currency = strtoupper($request->query('currency', 'GBP'));
+            $gbpRate = ConversionRate::where('currency', 'GBP')->first()->conversion_rate ?? 1.0; // GBP rate relative to USD
+            $conversionRate = 1.0; // Default to 1.0 for GBP (no conversion)
+            $conversion = ConversionRate::where('currency', $currency)->first();
+            if ($currency !== 'GBP') {
+                if (!$conversion) {
+                    return $this->sendError('Currency not supported', 'Invalid currency', 400);
+                }
+                // Convert GBP to USD (1 / GBP_rate) then to target currency (target_rate)
+                $conversionRate = (1 / $gbpRate) * $conversion->conversion_rate;
+            }
+
             $products = $query->get();
 
             if ($products->isEmpty()) {
                 return $this->sendError('No products found', 'No products available', 200);
             }
 
-            // Prepare response data with thumbnail_url and image_url
-            $responseData = $products->map(function ($product) {
+            // Prepare response data with filters and conversions
+            $responseData = $products->map(function ($product) use ($numberOfBoxes, $currency, $conversionRate) {
                 $data = $product->toArray();
                 $data['thumbnail'] = $product->getRawOriginal('thumbnail');
                 $data['thumbnail_url'] = $data['thumbnail'] ? asset($data['thumbnail']) : null;
@@ -70,17 +88,35 @@ class ProductApiController extends Controller
                         'product_id' => $image->product_id,
                     ];
                 })->toArray();
-                $data['price_ranges'] = $product->priceRanges->map(function ($range) {
+
+                // Convert all price_ranges (unfiltered) for from_price and response
+                $allPriceRanges = $product->priceRanges->map(function ($range) use ($conversionRate) {
                     return [
                         'id' => $range->id,
                         'min_quantity' => $range->min_quantity,
                         'max_quantity' => $range->max_quantity,
-                        'price' => $range->price,
+                        'price' => round($range->price * $conversionRate, 2), // Convert from GBP via USD
                         'product_id' => $range->product_id,
                     ];
-                })->toArray();
+                });
+
+                // Calculate from_price from all price_ranges
+                $data['from_price'] = $allPriceRanges->isEmpty() ? null : round(min($allPriceRanges->pluck('price')->all()), 2);
+
+                // Filter price_ranges based on number_of_boxes for inclusion check
+                $validRangeExists = !$numberOfBoxes || $product->priceRanges->contains(function ($range) use ($numberOfBoxes) {
+                        return $numberOfBoxes >= $range->min_quantity && $numberOfBoxes <= ($range->max_quantity ?? PHP_INT_MAX);
+                    });
+
+                if (!$validRangeExists) {
+                    return null; // Skip this product if no valid range
+                }
+
+                // Include all price_ranges in response (converted)
+                $data['price_ranges'] = $allPriceRanges->toArray();
+
                 return $data;
-            })->toArray();
+            })->filter()->values()->toArray(); // Remove null entries and reindex
 
             return $this->sendResponse($responseData, 'Products retrieved successfully');
         } catch (Exception $e) {
