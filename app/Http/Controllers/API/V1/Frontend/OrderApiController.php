@@ -12,7 +12,9 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductPriceRange;
+use App\Services\PaymentService;
 use App\Traits\ResponseTrait;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -24,6 +26,13 @@ use Illuminate\Support\Str;
 class OrderApiController extends Controller
 {
     use ResponseTrait;
+
+    protected $paymentService;
+
+    public function __construct(PaymentService $paymentService)
+    {
+        $this->paymentService = $paymentService;
+    }
 
     public function store(OrderRequest $request)
     {
@@ -184,17 +193,53 @@ class OrderApiController extends Controller
                 ));
             }
 
+            // Handle payment link if pay_now is true
+            $paymentLink = null;
+            if ($request->boolean('pay_now')) {
+                $checkoutSession = $this->paymentService->createCheckoutSession($priceInCurrency, $userCurrency, $order);
+                $paymentLink = $checkoutSession->url;
+            }
+
+            // Set invoice link if get_invoice is true
+            $invoiceLink = null;
+            if ($request->boolean('get_invoice')) {
+                $invoiceLink = route('invoice.download', ['slug' => $order->slug]);
+            }
+
             DB::commit();
 
             // Load relationships for response
             $order->load('orderItems.product', 'billingAddresses', 'deliveryAddresses', 'giftBox');
 
-            return $this->sendResponse($order, 'Order created successfully');
+            return $this->sendResponse([
+                'order' => $order,
+                'payment_link' => $paymentLink,
+                'invoice_link' => $invoiceLink,
+            ], 'Order created successfully', 201);
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Failed to create order: ' . $e->getMessage());
             return $this->sendError($e->getMessage(), 'Something went wrong', 500);
         }
+    }
+
+    public function downloadInvoice($slug)
+    {
+        $order = Order::where('slug', $slug)->firstOrFail();
+
+        // Authorize the user
+        /*if (auth()->check()) {
+            $user = auth()->user();
+            if ($user->role !== 'admin' && $order->user_id !== $user->id) {
+                return $this->sendError('Unauthorized', 'You do not have permission to download this invoice', 403);
+            }
+        } else {
+            return $this->sendError('Unauthenticated', 'Please provide a valid token', Response::HTTP_UNAUTHORIZED);
+        }*/
+
+        $pdf = Pdf::loadView('invoices.show', compact('order'));
+
+        return $pdf->download('invoice_order_' . $slug . '.pdf');
     }
 
     /*============ pending orders ============*/

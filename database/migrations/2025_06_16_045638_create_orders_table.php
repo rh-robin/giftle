@@ -35,6 +35,7 @@ return new class extends Migration
             $table->decimal('gift_box_price_gbp', 8, 2)->default(0);
             $table->decimal('gift_box_price_user_currency', 8, 2)->default(0);
             $table->enum('payment_status', ['pending', 'completed', 'cancelled', 'hold'])->default('pending')->nullable();
+            $table->string('checkout_session_id')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');

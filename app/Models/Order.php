@@ -31,6 +31,7 @@ class Order extends Model
         'gift_box_price_gbp',
         'gift_box_price_user_currency',
         'payment_status',
+        'checkout_session_id'
     ];
 
     protected $casts = [

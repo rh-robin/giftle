@@ -21,9 +21,9 @@ class GiftRedemptionApiController extends Controller
                 'integer',
                 'min:0',
                 function ($attribute, $value, $fail) use ($request) {
-                    $order = Order::find($request->order_id);
+                    $order = Order::with('orderItems.product')->find($request->order_id);
                     if ($order) {
-                        $productItemCount = $order->items()->where('product_type', 'product')->count();
+                        $productItemCount = $order->orderItems->where('product.product_type', 'product')->count();
                         if ($value > $productItemCount) {
                             $fail("The $attribute must not exceed the number of order items with product type 'product' ($productItemCount).");
                         }
@@ -33,7 +33,7 @@ class GiftRedemptionApiController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->sendError($validator, 'Validation failed', 422);
+            return $this->sendError($validator->errors(), 'Validation failed', 422);
         }
 
         // Find the order

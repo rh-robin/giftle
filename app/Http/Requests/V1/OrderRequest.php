@@ -76,6 +76,8 @@ class OrderRequest extends FormRequest
             'delivery_address.address_line_3' => ['nullable', 'string', 'max:255'],
             'delivery_address.postal_code' => ['required_if:delivery_address,array', 'string', 'max:20'],
             'delivery_address.post_town' => ['required_if:delivery_address,array', 'string', 'max:255'],
+            'pay_now' => ['boolean'],
+            'get_invoice' => ['boolean'],
         ];
     }
 
@@ -87,6 +89,8 @@ class OrderRequest extends FormRequest
             'products.*.product_id.exists' => 'One or more product IDs are invalid.',
             'products.*.quantity.required' => 'Quantity is required for each product.',
             'delivery_address.required_if' => 'Delivery address is required when multiple delivery addresses are not enabled.',
+            'pay_now.boolean' => 'The pay now field must be a boolean.',
+            'get_invoice.boolean' => 'The get invoice field must be a boolean.',
         ];
     }
 }

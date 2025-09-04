@@ -164,6 +164,7 @@ Route::prefix('v1/')->group(function () {
 });
 
 
+Route::get('/invoice/{slug}', [OrderApiController::class, 'downloadInvoice'])->name('invoice.download');
 Route::prefix('v1/')->middleware('auth:sanctum')->group(function () {
     //orders
     Route::post('create-order', [OrderApiController::class, 'store']);
@@ -180,6 +181,6 @@ Route::prefix('v1/')->middleware('auth:sanctum')->group(function () {
     Route::get('campaign/microsite/{orderId}/responses', [MicrositeApiController::class, 'viewRecipientResponses']);
 
     //gift-redemption
-    Route::post('campaign/gift-redemption/{id}', [GiftRedemptionApiController::class, 'setGiftRedeemQuantity']);
+    Route::post('campaign/gift-redemption', [GiftRedemptionApiController::class, 'setGiftRedeemQuantity']);
     Route::get('campaign/gift-redemption/{orderId}/responses', [GiftRedemptionApiController::class, 'viewRecipientResponses']);
 });
