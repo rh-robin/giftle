@@ -65,7 +65,6 @@ class ProductApiController extends Controller
                 if (!$conversion) {
                     return $this->sendError('Currency not supported', 'Invalid currency', 400);
                 }
-                // Convert GBP to USD (1 / GBP_rate) then to target currency (target_rate)
                 $conversionRate = (1 / $gbpRate) * $conversion->conversion_rate;
             }
 
@@ -89,18 +88,18 @@ class ProductApiController extends Controller
                     ];
                 })->toArray();
 
-                // Convert all price_ranges (unfiltered) for from_price and response
+                // Convert all price_ranges with consistent rounding to 2 decimal places
                 $allPriceRanges = $product->priceRanges->map(function ($range) use ($conversionRate) {
                     return [
                         'id' => $range->id,
                         'min_quantity' => $range->min_quantity,
                         'max_quantity' => $range->max_quantity,
-                        'price' => round($range->price * $conversionRate, 2), // Convert from GBP via USD
+                        'price' => round($range->price * $conversionRate, 2), // Per unit price
                         'product_id' => $range->product_id,
                     ];
                 });
 
-                // Calculate from_price from all price_ranges
+                // Calculate from_price with consistent rounding to 2 decimal places
                 $data['from_price'] = $allPriceRanges->isEmpty() ? null : round(min($allPriceRanges->pluck('price')->all()), 2);
 
                 // Filter price_ranges based on number_of_boxes for inclusion check
@@ -112,13 +111,25 @@ class ProductApiController extends Controller
                     return null; // Skip this product if no valid range
                 }
 
-                // Include all price_ranges in response (converted)
+                // Calculate num_of_box_wise_price with quantity multiplier and 2 decimal places
+                $numOfBoxWisePrice = null;
+                if ($numberOfBoxes) {
+                    $matchingRange = $product->priceRanges->first(function ($range) use ($numberOfBoxes) {
+                        return $numberOfBoxes >= $range->min_quantity && $numberOfBoxes <= ($range->max_quantity ?? PHP_INT_MAX);
+                    });
+                    if ($matchingRange) {
+                        $numOfBoxWisePrice = round($matchingRange->price * $conversionRate * $numberOfBoxes, 2);
+                    }
+                }
+                $data['num_of_box_wise_price'] = $numOfBoxWisePrice;
+
+                // Include all price_ranges in response
                 $data['price_ranges'] = $allPriceRanges->toArray();
 
                 return $data;
             })->filter()->values()->toArray(); // Remove null entries and reindex
 
-            return $this->sendResponse($responseData, 'Products retrieved successfully');
+            return $this->sendResponse($responseData, 'Products retrieved successfully', 200);
         } catch (Exception $e) {
             Log::error('Failed to retrieve products: ' . $e->getMessage());
             return $this->sendError($e->getMessage(), 'Something went wrong', 500);
