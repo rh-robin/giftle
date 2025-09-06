@@ -155,8 +155,8 @@ Route::prefix('v1/')->group(function () {
     Route::post('campaign/microsite/{slug}/recipient-data', [MicrositeApiController::class, 'storeRecipientData']);
 
     //gift-redemption
-    Route::get('campaign/gift-redemption/{slug}/recipient-data', [MicrositeApiController::class, 'recipientPage']);
-    Route::post('campaign/gift-redemption/{slug}/recipient-data', [MicrositeApiController::class, 'storeRecipientData']);
+    Route::get('campaign/gift-redemption/{slug}/recipient-data', [GiftRedemptionApiController::class, 'recipientPage']);
+    Route::post('campaign/gift-redemption/{slug}/recipient-data', [GiftRedemptionApiController::class, 'storeRecipientData']);
 
     // Currency route
     Route::get('get-currency', [CurrencyApiController::class, 'getCurrency']);
@@ -181,6 +181,6 @@ Route::prefix('v1/')->middleware('auth:sanctum')->group(function () {
     Route::get('campaign/microsite/{orderId}/responses', [MicrositeApiController::class, 'viewRecipientResponses']);
 
     //gift-redemption
-    Route::post('campaign/gift-redemption', [GiftRedemptionApiController::class, 'setGiftRedeemQuantity']);
+    Route::post('campaign/gift-redemption-setup', [GiftRedemptionApiController::class, 'setGiftRedeemQuantity']);
     Route::get('campaign/gift-redemption/{orderId}/responses', [GiftRedemptionApiController::class, 'viewRecipientResponses']);
 });

@@ -101,6 +101,7 @@ class MicrositeApiController extends Controller
         try {
             $order = Order::where('slug', $slug)
                 ->where('campaign_type', 'microsite')
+                ->select('id', 'campaign_type', 'campaign_name', 'slug', 'multiple_delivery_address')
                 ->with([
                     'orderItems.product' => function ($query) {
                         $query->select([
@@ -110,9 +111,6 @@ class MicrositeApiController extends Controller
                             'slug'
                         ]);
                     },
-                    'giftBox:id,name,giftle_branded_price,custom_branding_price,plain_price',
-                    'deliveryAddresses:id,order_id,recipient_name,email,phone,address_line_1,address_line_2,address_line_3,postal_code,post_town',
-                    'billingAddresses:id,order_id,biller_name,email,phone,address_line_1,address_line_2,address_line_3,postal_code,post_town',
                     'microsites' => function ($query) {
                         $query->select([
                             'id',
@@ -132,8 +130,6 @@ class MicrositeApiController extends Controller
 
             // Prepare response data with formatted price, due_date, and thumbnail_url
             $responseData = $order->toArray();
-            $responseData['price'] = number_format($order->price_in_currency, 2) . ' ' . $order->user_currency;
-            $responseData['quantity'] = $order->number_of_boxes;
             $responseData['due_date'] = \Carbon\Carbon::parse($order->created_at)->addDays(14)->format('Y-m-d');
 
             // Merge microsite data into order_items and add thumbnail_url
