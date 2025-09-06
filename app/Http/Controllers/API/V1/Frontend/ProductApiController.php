@@ -111,17 +111,17 @@ class ProductApiController extends Controller
                     return null; // Skip this product if no valid range
                 }
 
-                // Calculate num_of_box_wise_price with quantity multiplier and 2 decimal places
-                $numOfBoxWisePrice = null;
+                // Calculate price based on number_of_boxes with 2 decimal places
+                $price = null;
                 if ($numberOfBoxes) {
                     $matchingRange = $product->priceRanges->first(function ($range) use ($numberOfBoxes) {
                         return $numberOfBoxes >= $range->min_quantity && $numberOfBoxes <= ($range->max_quantity ?? PHP_INT_MAX);
                     });
                     if ($matchingRange) {
-                        $numOfBoxWisePrice = round($matchingRange->price * $conversionRate * $numberOfBoxes, 2);
+                        $price = round($matchingRange->price * $conversionRate, 2);
                     }
                 }
-                $data['num_of_box_wise_price'] = $numOfBoxWisePrice;
+                $data['price'] = $price;
 
                 // Include all price_ranges in response
                 $data['price_ranges'] = $allPriceRanges->toArray();
