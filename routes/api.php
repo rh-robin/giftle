@@ -9,6 +9,8 @@ use App\Http\Controllers\API\V1\Frontend\CurrencyApiController;
 use App\Http\Controllers\API\V1\Frontend\GiftRedemptionApiController;
 use App\Http\Controllers\API\V1\Frontend\MicrositeApiController;
 use App\Http\Controllers\API\V1\Frontend\OrderApiController;
+use App\Http\Controllers\API\V1\GiftRedemptionController;
+use App\Http\Controllers\API\V1\MicrositeController;
 use App\Http\Controllers\API\V1\OrderController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Auth\LoginController;
@@ -122,6 +124,16 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function ()
         Route::get('/pending', 'pendingCampaigns');
         Route::get('/{id}', 'viewCampaign');
     });
+
+    // MICROSITE ROUTE
+    Route::controller(MicrositeController::class)->prefix('v1/campaign')->group(function () {
+        Route::get('/microsite/{orderId}/responses', 'getRecipientResponses');
+    });
+
+    // GIFT REDEMPTION ROUTE
+    Route::controller(GiftRedemptionController::class)->prefix('v1/campaign')->group(function () {
+        Route::get('/gift-redemption/{orderId}/responses', 'getRecipientResponses');
+    });
 });
 
 
@@ -178,9 +190,9 @@ Route::prefix('v1/')->middleware('auth:sanctum')->group(function () {
 
     //microsite
     Route::post('campaign/microsite-setup/{id}', [MicrositeApiController::class, 'micrositeSetup']);
-    Route::get('campaign/microsite/{orderId}/responses', [MicrositeApiController::class, 'viewRecipientResponses']);
+    Route::get('campaign/microsite/{orderId}/responses', [MicrositeApiController::class, 'getRecipientResponses']);
 
     //gift-redemption
     Route::post('campaign/gift-redemption-setup', [GiftRedemptionApiController::class, 'setGiftRedeemQuantity']);
-    Route::get('campaign/gift-redemption/{orderId}/responses', [GiftRedemptionApiController::class, 'viewRecipientResponses']);
+    Route::get('campaign/gift-redemption/{orderId}/responses', [GiftRedemptionApiController::class, 'getRecipientResponses']);
 });

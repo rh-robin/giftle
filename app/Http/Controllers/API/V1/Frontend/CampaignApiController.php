@@ -27,7 +27,8 @@ class CampaignApiController extends Controller
                     'price_in_currency',
                     'user_currency',
                     'number_of_boxes',
-                    'created_at'
+                    'campaign_type',
+                    'created_at',
                 ])
                 ->latest()
                 ->get();
@@ -40,6 +41,7 @@ class CampaignApiController extends Controller
             $responseData = $orders->map(function ($order) {
                 return [
                     'id' => $order->id,
+                    'campaign_type' => $order->campaign_type,
                     'status' => $order->status,
                     'price' => number_format($order->price_in_currency, 2) . ' ' . $order->user_currency,
                     'quantity' => $order->number_of_boxes,

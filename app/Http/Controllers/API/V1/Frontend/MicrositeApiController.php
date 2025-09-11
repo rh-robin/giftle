@@ -324,79 +324,100 @@ class MicrositeApiController extends Controller
 
 
 
-    public function viewRecipientResponses(Request $request, $orderId)
+    public function getRecipientResponses($orderId)
     {
         try {
-            // Validate the order and user
+            // Find the order by order_id, verify campaign type and user ownership
             $order = Order::where('id', $orderId)
-                ->where('user_id', auth('api')->id())
                 ->where('campaign_type', 'microsite')
-                ->with([
-                    'orderItems.product' => function ($query) {
-                        $query->select(['id', 'name', 'thumbnail', 'slug']);
-                    },
-                    'giftBox:id,name,giftle_branded_price,custom_branding_price,plain_price',
-                    'deliveryAddresses:id,order_id,recipient_name,email,phone,address_line_1,address_line_2,address_line_3,postal_code,post_town',
-                    'billingAddresses:id,order_id,biller_name,email,phone,address_line_1,address_line_2,address_line_3,postal_code,post_town',
-                    'microsites' => function ($query) {
-                        $query->select(['id', 'order_id', 'order_item_id', 'ask_size', 'input_type', 'options']);
-                    },
-                    'deliveryAddresses.micrositeItemSizes' => function ($query) {
-                        $query->select(['id', 'delivery_address_id', 'order_id', 'order_item_id', 'size']);
-                    }
-                ])
+                ->where('user_id', auth('api')->id())
+                ->select('id', 'campaign_name', 'slug', 'number_of_boxes')
                 ->first();
 
             if (!$order) {
-                return $this->sendError('Order not found or not accessible', 'Invalid order ID or unauthorized access', 404);
+                return $this->sendError('Invalid campaign or not accessible', 'Order not found, not a microsite campaign, or you do not have access', 404);
             }
 
+            // Fetch all delivery addresses with their microsite item sizes
+            $deliveryAddresses = DeliveryAddress::where('order_id', $order->id)
+                ->with([
+                    'micrositeItemSizes' => function ($query) {
+                        $query->select([
+                            'id',
+                            'delivery_address_id',
+                            'order_id',
+                            'order_item_id',
+                            'size'
+                        ])->with([
+                            'orderItem.product' => function ($query) {
+                                $query->select(['id', 'name', 'thumbnail', 'slug']);
+                            }
+                        ]);
+                    }
+                ])
+                ->select([
+                    'id',
+                    'order_id',
+                    'recipient_name',
+                    'email',
+                    'phone',
+                    'address_line_1',
+                    'address_line_2',
+                    'address_line_3',
+                    'postal_code',
+                    'post_town',
+                    'created_at'
+                ])
+                ->get();
+
             // Prepare response data
-            $responseData = $order->toArray();
-            $responseData['price'] = number_format($order->price_in_currency, 2) . ' ' . $order->user_currency;
-            $responseData['quantity'] = $order->number_of_boxes;
-            $responseData['due_date'] = \Carbon\Carbon::parse($order->created_at)->addDays(14)->format('Y-m-d');
-
-            // Merge microsite data and size selections into order_items
-            $responseData['order_items'] = collect($responseData['order_items'])->map(function ($item) use ($order) {
-                // Add thumbnail_url to product
-                $item['product']['thumbnail_url'] = $item['product']['thumbnail'] ? asset($item['product']['thumbnail']) : null;
-
-                // Find corresponding microsite data
-                $microsite = collect($order->microsites)->firstWhere('order_item_id', $item['id']);
-                $item['microsite'] = $microsite ? [
-                    'ask_size' => $microsite['ask_size'],
-                    'input_type' => $microsite['input_type'],
-                    'options' => $microsite['options']
-                ] : null;
-
-                // Add size selections for this order item using Eloquent relationship
-                $item['selected_sizes'] = $order->deliveryAddresses
-                    ->flatMap(function ($address) {
-                        return $address->micrositeItemSizes; // Access the relationship directly
-                    })
-                    ->where('order_item_id', $item['id'])
-                    ->map(function ($size) use ($order) {
-                        $address = $order->deliveryAddresses->firstWhere('id', $size->delivery_address_id);
+            $responseData = [
+                'campaign' => [
+                    'id' => $order->id,
+                    'name' => $order->campaign_name,
+                    'slug' => $order->slug,
+                    'number_of_boxes' => $order->number_of_boxes
+                ],
+                'responses' => $deliveryAddresses->map(function ($address) {
+                    $selectedSizes = $address->micrositeItemSizes->map(function ($size) {
                         return [
-                            'delivery_address_id' => $size->delivery_address_id,
                             'order_item_id' => $size->order_item_id,
                             'size' => $size->size,
-                            'recipient_email' => $address ? $address->email : null
+                            'product' => $size->orderItem && $size->orderItem->product ? [
+                                'id' => $size->orderItem->product->id,
+                                'name' => $size->orderItem->product->name,
+                                'slug' => $size->orderItem->product->slug,
+                                'thumbnail_url' => $size->orderItem->product->thumbnail ? asset($size->orderItem->product->thumbnail) : null
+                            ] : null
                         ];
-                    })
-                    ->values()
-                    ->toArray();
+                    })->filter(function ($size) {
+                        return !is_null($size['product']);
+                    })->values()->toArray();
 
-                return $item;
-            })->toArray();
+                    return [
+                        'delivery_address_id' => $address->id,
+                        'order_id' => $address->order_id,
+                        'recipient_name' => $address->recipient_name,
+                        'email' => $address->email,
+                        'phone' => $address->phone,
+                        'address_line_1' => $address->address_line_1,
+                        'address_line_2' => $address->address_line_2,
+                        'address_line_3' => $address->address_line_3,
+                        'postal_code' => $address->postal_code,
+                        'post_town' => $address->post_town,
+                        'selected_sizes' => $selectedSizes,
+                        'created_at' => $address->created_at->format('Y-m-d H:i:s')
+                    ];
+                })->toArray()
+            ];
 
-            // Remove top-level microsites from response
-            unset($responseData['microsites']);
-
-            return $this->sendResponse($responseData, 'Recipient responses retrieved successfully');
+            return $this->sendResponse(
+                $responseData,
+                'Recipient responses retrieved successfully',
+                200
+            );
         } catch (Exception $e) {
-            Log::error('Failed to retrieve recipient responses for order ID ' . $orderId . ': ' . $e->getMessage());
+            Log::error('Failed to retrieve recipient responses for order_id ' . $orderId . ': ' . $e->getMessage());
             return $this->sendError($e->getMessage(), 'Something went wrong', 500);
         }
     }

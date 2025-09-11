@@ -29,7 +29,7 @@ class OrderRequest extends FormRequest
             'products_in_bag' => ['boolean'],
             'gift_box_id' => ['nullable', 'exists:gift_boxes,id'],
             'gift_box_type' => ['nullable', 'in:giftle_branded,custom_branding,plain'],
-            'status' => ['required', 'in:pending,action,completed,cancelled,processing'],
+            'status' => ['nullable', 'in:pending,action,completed,cancelled,processing'],
             'campaign_type' => ['nullable', 'in:microsite,gift_redemption'],
             'campaign_name' => ['nullable', 'string', 'max:255'],
             'gift_redeem_quantity' => ['nullable', 'integer', 'min:0'],
